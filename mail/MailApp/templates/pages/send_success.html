@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Emails Sent</title>
+</head>
+<body>
+    <h1>Campaign Sent!</h1>
+    <p>Subject: {{ campaign.subject }}</p>
+    <p>Sent to:</p>
+    <ul>
+        {% for email in emails %}
+            <li>{{ email }}</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'add_subscriber' %}">Add More Subscribers</a>
+</body>
+</html>
