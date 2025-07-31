@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.mail import send_mail
 from django.conf import settings
+from datetime import datetime, timedelta
+from django.utils import timezone
 
-from .models import Subscriber, Campaign
+from .models import Subscriber, Campaign, SiteStats
 from .forms import SubscriberForm, CampaignForm
 
 def add_subscriber(request):
@@ -11,9 +13,20 @@ def add_subscriber(request):
         form = SubscriberForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('add_subscriber')
+            return redirect('subscribe_success')
     else:
         form = SubscriberForm()
+
+    # Count visit only once every 10 seconds per user session
+    stats, created = SiteStats.objects.get_or_create(pk=1)
+
+    last_visit = request.session.get('last_visit')
+    now = timezone.now()
+    threshold = timedelta(seconds=10)
+
+    if not last_visit or (now - timezone.datetime.fromisoformat(last_visit)) > threshold:
+        stats.increment_visit()
+        request.session['last_visit'] = now.isoformat()
 
     context = {
         'form': form,
@@ -21,6 +34,10 @@ def add_subscriber(request):
     }
 
     return render(request, 'pages/add_subscriber.html', context)
+
+def subscribe_success(request):
+    """Render a nice subscription success page."""
+    return render(request, 'pages/subscribe_success.html')
 
 def create_campaign(request):
     """Handle drafting a new email campaign."""
@@ -59,3 +76,34 @@ def send_campaign(request, campaign_id):
     }
     
     return render(request, 'pages/send_success.html', context)
+
+
+def dashboard(request):
+    stats = SiteStats.objects.first()
+    if stats:
+        visit_count = stats.visit_count
+    else:
+        visit_count = 0
+
+    total_subscribers = Subscriber.objects.count()
+    total_campaigns = Campaign.objects.count()
+    total_visitors = visit_count 
+
+    # Greeetings 
+    current_hour = datetime.now().hour
+    if current_hour < 12:
+        greeting = "Good Morning"
+    elif current_hour < 16:
+        greeting = "Good Afternoon"
+    else:
+        greeting = "Good Evening"
+
+    context = {
+        'total_subscribers': total_subscribers,
+        'total_campaigns': total_campaigns,
+        'total_visitors': total_visitors,
+        'greeting': greeting,
+        'title': 'Admin Dashboard | Mailer',
+    }
+
+    return render(request, 'pages/dashboard.html', context)

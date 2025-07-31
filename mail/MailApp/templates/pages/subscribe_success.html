@@ -24,31 +24,20 @@
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-        <title> {{title}} </title>
+        <title> Subscription Successful | OwlphaDAO </title>
     </head>
+    
     <body class="flex items-center justify-center min-h-screen">
-        <div class="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full relative">
-            <button class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl">&times;</button>
-
+        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
             <!-- Image placeholder -->
             <div class="flex justify-center mb-1">
                 <img src="https://media.licdn.com/dms/image/v2/D4D0BAQHUyn95gj3h1A/company-logo_200_200/company-logo_200_200/0/1708529125650?e=1756944000&v=beta&t=I1o-tPph7ojP9QZQuo7DZQyoFaOYWpSl2leumF_oxIk" alt="OwlphaDAO" class="w-32 h-32 object-contain">
             </div>
 
-            <!-- Headline -->
-            <h2 class="text-2xl font-bold mb-2 text-center">Join us</h2>
-            <p class="text-gray-600 mb-6 text-center">
-                Subscribe to our newsletter for exclusive industry insights, early updates, and trusted community news. Stay ahead with us.
+            <h2 class="text-2xl font-semibold mb-2">Subscription Successful</h2>
+            <p class="text-gray-600 mb-6 leading-relaxed">
+                Thank you for subscribing! You’ll now receive exclusive updates and insights from <strong>OwlphaDAO</strong> straight to your inbox.
             </p>
-
-            <!-- Form -->
-            <form method="post" class="flex">
-                {% csrf_token %}
-                <input type="email" name="email" placeholder="Enter your email address..." required class="flex-grow border border-gray-300 rounded-l-full px-4 py-2 outline-none focus:ring-1"/>
-                <button type="submit"  class="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-6 shadow font-semibold rounded-r-full hover:opacity-90 transition">
-                    Subscribe
-                </button>
-            </form>
         </div>
     </body>
 </html>
