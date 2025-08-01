@@ -10,3 +10,7 @@ class CampaignForm(forms.ModelForm):
     class Meta:
         Model = Campaign
         fields = ['subject', 'body']
+
+class SendMessageForm(forms.Form):
+    subject = forms.CharField(max_length=255)
+    body = forms.CharField(widget=forms.Textarea)

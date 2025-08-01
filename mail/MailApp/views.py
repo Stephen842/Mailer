@@ -3,9 +3,10 @@ from django.core.mail import send_mail
 from django.conf import settings
 from datetime import datetime, timedelta
 from django.utils import timezone
+from django.contrib import messages
 
 from .models import Subscriber, Campaign, SiteStats
-from .forms import SubscriberForm, CampaignForm
+from .forms import SubscriberForm, CampaignForm, SendMessageForm
 
 def add_subscriber(request):
     """Handle adding a new subscriber email."""
@@ -107,3 +108,67 @@ def dashboard(request):
     }
 
     return render(request, 'pages/dashboard.html', context)
+
+def subscriber_list(request):
+    """Subscriber List Page"""
+    subscribers = Subscriber.objects.all().order_by('date_subscribed')
+
+    context = {
+        'subscribers': subscribers,
+        'title': 'Subscriber List | Mailer',
+    }
+
+    return render(request, 'pages/subscriber_list.html', context)
+
+def admin_add_subscriber(request):
+    """Handle adding a new subscriber email from the admin dashboard"""
+    if request.method == 'POST':
+        form = SubscriberForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('subscriber_list')
+    else:
+        form = SubscriberForm()
+
+    context = {
+        'form': form,
+        'title': 'Add New Subscriber | Mailer',
+    }
+
+    return render(request, 'pages/admin_add_subscriber.html', context)
+
+def delete_subscriber(request, pk):
+    """Handles deleting subscribers"""
+    subscriber = get_object_or_404(Subscriber, pk=pk)
+    subscriber.delete()
+    messages.success(request, f'Deleted Subscriber: {subscriber.email}')
+    return redirect('subscriber_list')
+
+def send_message(request, pk):
+    """Handles sending sending messages to specific contact"""
+    subscriber = get_object_or_404(Subscriber, pk=pk)
+
+    if request.method == 'POST':
+        form = SendMessageForm(request.POST)
+        if form.is_valid():
+            subject = form.cleaned_data['subject']
+            body = form.cleaned_data['body']
+            send_mail(
+                subject,
+                body,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[subscriber.email],
+                fail_silently=False,
+            )
+            messages.success(request, f'Message Sent to {subscriber.email}')
+            return redirect('subscriber_list')
+    else:
+        form = SendMessageForm()
+    
+    context = {
+        'subscriber': subscriber,
+        'form': form,
+        'title': f'Send Message to {subscriber.email}'
+    }
+
+    return render(request, 'pages/send_message.html', context)

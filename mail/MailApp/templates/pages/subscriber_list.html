@@ -91,44 +91,50 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 ml-64 p-10 flex flex-col justify-between min-h-screen overflow-y-auto">
-            <!-- Top Content -->
-            <div>
-                <h1 class="text-4xl font-extrabold mb-10 text-gray-800 tracking-tight">{{ greeting }} Admin</h1>
-
-                <!-- Cards Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                    <!-- Subscribers Card -->
-                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 text-center shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                        <h2 class="text-2xl font-bold mb-3 text-blue-900">Total Subscribers</h2>
-                        <p class="text-5xl font-extrabold text-blue-700 mb-6">{{ total_subscribers }}</p>
-                        <a href="{% url 'subscriber_list' %}" class="inline-block bg-blue-600 text-white px-6 py-2 rounded-full shadow hover:bg-blue-700 transition-colors duration-200">
-                            Manage Subscribers
+        <main class="flex-1 ml-64 flex flex-col min-h-screen overflow-y-auto">
+            <div class="flex-grow flex flex-col justify-start p-10">
+                <div class="max-w-5xl w-full mx-auto p-8 bg-white rounded-xl shadow-lg">
+                    <div class="flex justify-between items-center mb-6">
+                        <h1 class="text-3xl font-bold text-gray-800">All Subscribers</h1>
+                        <a href="{% url 'admin_add_subscriber' %}" class="inline-flex items-center gap-2 bg-green-600 text-white px-5 py-2 rounded-full shadow hover:bg-green-700 transition-all duration-200">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Add Subscriber
                         </a>
                     </div>
 
-                    <!-- Campaigns Card -->
-                    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-8 text-center shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                        <h2 class="text-2xl font-bold mb-3 text-green-900">Total Campaigns</h2>
-                        <p class="text-5xl font-extrabold text-green-700 mb-6">{{ total_campaigns }}</p>
-                        <a href="#" class="inline-block bg-green-600 text-white px-6 py-2 rounded-full shadow hover:bg-green-700 transition-colors duration-200">
-                            Manage Campaigns
-                        </a>
-                    </div>
-
-                    <!-- Visitors Card -->
-                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-8 text-center shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                        <h2 class="text-2xl font-bold mb-3 text-purple-900">Site Visitors</h2>
-                        <p class="text-5xl font-extrabold text-purple-700 mb-6">{{ total_visitors }}</p>
-                        <a href="#" class="inline-block bg-purple-600 text-white px-6 py-2 rounded-full shadow hover:bg-purple-700 transition-colors duration-200">
-                            View Analytics
-                        </a>
-                    </div>
+                    <table class="min-w-full table-auto border border-gray-200 rounded-lg overflow-hidden">
+                        <thead>
+                            <tr class="bg-gray-100 text-left text-sm">
+                                <th class="px-4 py-3 font-semibold">Email</th>
+                                <th class="px-4 py-3 font-semibold">Date Subscribed</th>
+                                <th class="px-4 py-3 font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200 text-sm">
+                            {% for subscriber in subscribers %}
+                            <tr>
+                                <td class="px-4 py-3">{{ subscriber.email }}</td>
+                                <td class="px-4 py-3">{{ subscriber.date_subscribed }}</td>
+                                <td class="px-4 py-3 space-x-4">
+                                    <a href="{% url 'send_message' subscriber.pk %}" class="inline-block text-blue-600 font-medium hover:underline">Send Mail</a>
+                                    <a href="{% url 'delete_subscriber' subscriber.pk %}" class="inline-block text-red-600 font-medium hover:underline" onclick="return confirm('Are you sure?');">Delete</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="px-4 py-4 text-center text-gray-500">No subscribers yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
             <!-- Footer -->
-            <p class="text-gray-500 text-xs text-center">Mailer MVP • Crafted with ❤️ by OwlphaDAO</p>
+            <p class="text-gray-500 text-xs text-center py-6">Mailer MVP • Crafted with ❤️ by OwlphaDAO</p>
         </main>
+
     </body>
 </html>
