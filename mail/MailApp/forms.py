@@ -8,7 +8,7 @@ class SubscriberForm(forms.ModelForm):
 
 class CampaignForm(forms.ModelForm):
     class Meta:
-        Model = Campaign
+        model = Campaign
         fields = ['subject', 'body']
 
 class SendMessageForm(forms.Form):

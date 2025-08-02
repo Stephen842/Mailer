@@ -40,44 +40,6 @@ def subscribe_success(request):
     """Render a nice subscription success page."""
     return render(request, 'pages/subscribe_success.html')
 
-def create_campaign(request):
-    """Handle drafting a new email campaign."""
-    if request.method == 'POST':
-        form = CampaignForm(request.POST)
-        if form.is_valid():
-            campaign = form.save()
-            return redirect('send_campaign', campaign_id=campaign.id)
-    else:
-        form = CampaignForm()
-
-    context = {
-        'form': form,
-        'title': 'Testing',
-    }
-
-    return render(request, 'pages/create_campaign.html', context)
-
-def send_campaign(request, campaign_id):
-    """Send a campaign to all subscribers."""
-    campaign = get_object_or_404(Campaign, id=campaign_id)
-    subscribers = Subscriber.objects.all()
-    emails = [s.email for s in subscribers]
-
-    send_mail(
-        subject=campaign.subject,
-        message=campaign.body,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=emails,
-        fail_silently=False,
-    )
-
-    context = {
-        'campaign': campaign,
-        'emails': emails,
-    }
-    
-    return render(request, 'pages/send_success.html', context)
-
 
 def dashboard(request):
     stats = SiteStats.objects.first()
@@ -172,3 +134,70 @@ def send_message(request, pk):
     }
 
     return render(request, 'pages/send_message.html', context)
+
+def campaign_list(request):
+    """Campaign List Page"""
+    campaigns = Campaign.objects.all().order_by('created_at')
+
+    context = {
+        'campaigns': campaigns,
+        'title': 'Campaign List | Mailer',
+    }
+
+    return render(request, 'pages/campaign_list.html', context)
+
+def create_campaign(request):
+    """Handle drafting a new email campaign."""
+    if request.method == 'POST':
+        form = CampaignForm(request.POST)
+        if form.is_valid():
+            campaign = form.save()
+            return redirect('send_campaign', campaign_id=campaign.id)
+    else:
+        form = CampaignForm()
+
+    context = {
+        'form': form,
+        'title': 'Create Email Campaign',
+    }
+
+    return render(request, 'pages/create_campaign.html', context)
+
+def send_campaign(request, campaign_id):
+    """Send a campaign to all subscribers."""
+    campaign = get_object_or_404(Campaign, id=campaign_id)
+    subscribers = Subscriber.objects.all()
+    emails = [s.email for s in subscribers]
+
+    send_mail(
+        subject=campaign.subject,
+        message=campaign.body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=emails,
+        fail_silently=False,
+    )
+
+    context = {
+        'campaign': campaign,
+        'emails': emails,
+        'title': 'Campaign Successfully Sent | Mailer'
+    }
+    
+    return render(request, 'pages/send_success.html', context)
+
+def campaign_view(request, pk):
+    """Render a nice campaign view page."""
+    campaign = get_object_or_404(Campaign, pk=pk)
+    
+    context = {
+        'campaign': campaign,
+        'title': f'{campaign.subject} | Mailer'
+    }
+    return render(request, 'pages/campaign_view.html', context)
+
+def delete_campaign(request, pk):
+    """Handles deleting subscribers"""
+    campaign = get_object_or_404(Campaign, pk=pk)
+    campaign.delete()
+    messages.success(request, f'Deleted campaign: {campaign.subject}')
+    return redirect('campaign_list')

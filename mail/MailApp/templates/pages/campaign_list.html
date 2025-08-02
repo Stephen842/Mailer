@@ -92,27 +92,49 @@
 
         <!-- Main Content -->
         <main class="flex-1 ml-64 flex flex-col min-h-screen overflow-y-auto">
-            <div class="flex-grow flex items-center justify-center p-10">
-                <div class="relative w-full max-w-md bg-white rounded-xl shadow-lg p-8">
-                    <button class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl"><a href="{% url 'subscriber_list' %}">&times;</a></button>
-                    <h1 class="text-2xl font-semibold mb-6 text-gray-700">Add New Subscriber</h1>
-
-                    <!-- Image placeholder -->
-                    <div class="flex justify-center mb-1">
-                        <img src="https://media.licdn.com/dms/image/v2/D4D0BAQHUyn95gj3h1A/company-logo_200_200/company-logo_200_200/0/1708529125650?e=1756944000&v=beta&t=I1o-tPph7ojP9QZQuo7DZQyoFaOYWpSl2leumF_oxIk" alt="OwlphaDAO" class="w-32 h-32 object-contain">
+            <div class="flex-grow flex flex-col justify-start p-10">
+                <div class="max-w-5xl w-full mx-auto p-8 bg-white rounded-xl shadow-lg">
+                    <div class="flex justify-between items-center mb-6">
+                        <h1 class="text-3xl font-bold text-gray-800">All Subscribers</h1>
+                        <a href="{% url 'create_campaign' %}" class="inline-flex items-center gap-2 bg-green-600 text-white px-5 py-2 rounded-full shadow hover:bg-green-700 transition-all duration-200">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Create Campaign
+                        </a>
                     </div>
-                    <form method="post" class="flex">
-                        {% csrf_token %}
-                        <input type="email" name="email" placeholder="Enter your email address..." required class="flex-grow border border-gray-300 rounded-l-full px-4 py-2 outline-none focus:ring-1"/>
-                        <button type="submit"  class="bg-green-600 hover:from-purple-600 hover:bg-green-700 transition duration-200 text-white px-6 shadow font-semibold rounded-r-full hover:opacity-90 transition">
-                            Add Subscriber
-                        </button>
-                    </form>
+
+                    <table class="min-w-full table-auto border border-gray-200 rounded-lg overflow-hidden">
+                        <thead>
+                            <tr class="bg-gray-100 text-left text-sm">
+                                <th class="px-4 py-3 font-semibold">Subject</th>
+                                <th class="px-4 py-3 font-semibold">Date Created</th>
+                                <th class="px-4 py-3 font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200 text-sm">
+                            {% for campaign in campaigns %}
+                            <tr>
+                                <td class="px-4 py-3">{{ campaign.subject }}</td>
+                                <td class="px-4 py-3">{{ campaign.created_at }}</td>
+                                <td class="px-4 py-3 space-x-4">
+                                    <a href="{% url 'campaign_view' campaign.pk %}" class="inline-block text-blue-600 font-medium hover:underline">View Campaign</a>
+                                    <a href="{% url 'delete_campaign' campaign.pk %}" class="inline-block text-red-600 font-medium hover:underline" onclick="return confirm('Are you sure?');">Delete</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="px-4 py-4 text-center text-gray-500">No campaign yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
             <!-- Footer -->
             <p class="text-gray-500 text-xs text-center py-6">Mailer MVP • Crafted with ❤️ by OwlphaDAO</p>
         </main>
+
     </body>
 </html>
