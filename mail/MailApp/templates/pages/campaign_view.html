@@ -96,7 +96,12 @@
         <main class="flex-1 ml-64 flex flex-col min-h-screen overflow-y-auto">
             <div class="flex items-center justify-center flex-grow">
                 <div class="w-full h-full flex items-center justify-center bg-green-50">
-                    <div class="w-full max-w-xl bg-white rounded-xl shadow-lg p-10 flex flex-col items-center text-center mt-4">
+                    <div class="w-full max-w-xl bg-white rounded-xl shadow-lg p-10 flex flex-col items-center text-center mt-4 relative">
+                        <!-- Date at top-right -->
+                        <div class="absolute top-6 right-6 text-sm text-gray-500">
+                            {{ campaign.created_at }}
+                        </div>
+
                         <!-- Success Icon -->
                         <div class="bg-green-100 rounded-full p-3 mb-6">
                             <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -117,18 +122,13 @@
 
                             <div class="flex flex-col">
                                 <span class="text-gray-500 font-semibold">Body</span>
-                                <span class="text-gray-800">{{ campaign.body }}</span>
-                            </div>
-
-                            <div class="flex flex-col">
-                                <span class="text-gray-500 font-semibold">Date</span>
-                                <span class="text-gray-800">{{ campaign.created_at }}</span>
+                                <span class="text-gray-800">{{ campaign.body|safe }}</span>
                             </div>
                         </div>
 
                         <!-- Optional CTA button -->
                         <a href="{% url 'dashboard' %}" class="mt-10 inline-block bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition">
-                        Back to Dashboard
+                            Back to Dashboard
                         </a>
                     </div>
                 </div>

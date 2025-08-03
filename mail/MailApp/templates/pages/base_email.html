@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ subject }}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f6f9fc;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    .container {
+      max-width: 620px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      padding: 40px 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.07);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .header img {
+      max-height: 80px;
+    }
+    .content {
+      line-height: 1.7;
+    }
+    .footer {
+      font-size: 0.9em;
+      color: #777;
+      text-align: center;
+      margin-top: 40px;
+    }
+    .highlight {
+      font-weight: bold;
+      color: #4f46e5;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <img src="https://media.licdn.com/dms/image/v2/D4D0BAQHUyn95gj3h1A/company-logo_200_200/company-logo_200_200/0/1708529125650?e=1756339200&v=beta&t=oYsO87bZWByvk_L9EPHKtGnuVSK2DCNZq1Wdqeoiyfc" alt="OWLPHADAO Logo">
+      <h2>{{ subject }}</h2>
+    </div>
+
+    <!-- Dynamic campaign body -->
+    <div class="content">
+      {{ body|safe }}
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="social-links" style="margin-bottom: 12px;">
+            <a href="https://www.linkedin.com/company/owlphadao/posts/?feedView=all" target="_blank" style="margin: 0 8px;">
+                <img src="https://cdn-icons-png.flaticon.com/128/145/145807.png" alt="LinkedIn" width="24" height="24">
+            </a>
+            <a href="https://x.com/OwlphaDAO_" target="_blank" style="margin: 0 8px;">
+                <img src="https://cdn-icons-png.flaticon.com/128/5968/5968958.png" alt="Twitter (X)" width="24" height="24">
+            </a>
+            <a href="https://discord.gg/VSFAfmvdTF" target="_blank" style="margin: 0 8px;">
+                <img src="https://cdn-icons-png.flaticon.com/128/3670/3670157.png" alt="Discord" width="24" height="24">
+            </a>
+        </div>
+        <p style="font-size: 13px; color: #888;">
+            &copy; {% now "Y" %} OwlphaDAO.org
+        </p>
+        <p style="font-size: 12px; color: #888; margin: 4px 0;">
+            OwlphaDAO HQ, Block 12, Innovation Hub Road, Lagos, Nigeria.
+        </p>
+
+        <p style="font-size: 12px; color: #888;">
+            You received this email because you are subscribed to updates from OwlphaDAO. If you didn’t expect this, please ignore it.
+        </p>
+    </div>
+  </div>
+</body>
+</html>

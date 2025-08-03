@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 from django.conf import settings
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -115,13 +117,24 @@ def send_message(request, pk):
         if form.is_valid():
             subject = form.cleaned_data['subject']
             body = form.cleaned_data['body']
-            send_mail(
-                subject,
-                body,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[subscriber.email],
-                fail_silently=False,
+
+            html_message = render_to_string(
+                'pages/base_email.html',
+                {
+                    'subject': subject,
+                    'body': body
+                }
             )
+            plain_message = strip_tags(html_message)
+
+            email = EmailMultiAlternatives(
+                subject=subject,
+                body=plain_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[subscriber.email],
+            )
+            email.attach_alternative(html_message, 'text/html')
+            email.send(fail_silently=False)
             messages.success(request, f'Message Sent to {subscriber.email}')
             return redirect('subscriber_list')
     else:
@@ -169,13 +182,23 @@ def send_campaign(request, campaign_id):
     subscribers = Subscriber.objects.all()
     emails = [s.email for s in subscribers]
 
-    send_mail(
-        subject=campaign.subject,
-        message=campaign.body,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=emails,
-        fail_silently=False,
+    html_message = render_to_string(
+        'pages/base_email.html',
+        {
+            'subject': campaign.subject,
+            'body': campaign.body
+        }
     )
+    plain_message = strip_tags(html_message)
+
+    email = EmailMultiAlternatives(
+        subject=campaign.subject,
+        body=plain_message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=emails,
+    )
+    email.attach_alternative(html_message, 'text/html')
+    email.send(fail_silently=False)
 
     context = {
         'campaign': campaign,
