@@ -6,6 +6,27 @@ class SubscriberForm(forms.ModelForm):
         model = Subscriber
         fields = ['email']
 
+class MultiEmailForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super(MultiEmailForm,self).__init__(*args, **kwargs)
+        for i in range(1, 51):
+            self.fields[f'email_{i}'] = forms.EmailField(required=False)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        self.valid_emails = []
+
+        for field in self.fields:
+            email = cleaned_data.get(field)
+            if email:
+                if not Subscriber.objects.filter(email=email).exists():
+                    self.valid_emails.append(email)
+
+        return cleaned_data
+
+    def get_emails(self):
+        return getattr(self, 'valid_emails', [])
+
 class CampaignForm(forms.ModelForm):
     class Meta:
         model = Campaign

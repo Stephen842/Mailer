@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.contrib import messages
 
 from .models import Subscriber, Campaign, SiteStats
-from .forms import SubscriberForm, CampaignForm, SendMessageForm
+from .forms import SubscriberForm, MultiEmailForm, CampaignForm, SendMessageForm
 
 def add_subscriber(request):
     """Handle adding a new subscriber email."""
@@ -87,12 +87,20 @@ def subscriber_list(request):
 def admin_add_subscriber(request):
     """Handle adding a new subscriber email from the admin dashboard"""
     if request.method == 'POST':
-        form = SubscriberForm(request.POST)
+        form = MultiEmailForm(request.POST)
         if form.is_valid():
-            form.save()
+            emails = form.get_emails()
+            added, skipped = 0, 0
+            for email in emails:
+                _, created = Subscriber.objects.get_or_create(email=email)
+                if created:
+                    added += 1
+                else:
+                    skipped +=1
+            messages.success(request, f'Added {added} new subscribers. Skipped {skipped} already existing')
             return redirect('subscriber_list')
     else:
-        form = SubscriberForm()
+        form = MultiEmailForm()
 
     context = {
         'form': form,
