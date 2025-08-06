@@ -1,4 +1,5 @@
 from django import forms
+from tinymce.widgets import TinyMCE
 from .models import Subscriber, Campaign
 
 class SubscriberForm(forms.ModelForm):
@@ -31,6 +32,9 @@ class CampaignForm(forms.ModelForm):
     class Meta:
         model = Campaign
         fields = ['subject', 'body']
+        widgets = {
+            'body': TinyMCE(attrs={'cols': 100, 'rows': 20}),
+        }
 
 class SendMessageForm(forms.Form):
     subject = forms.CharField(max_length=255)

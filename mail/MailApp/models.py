@@ -1,4 +1,5 @@
 from django.db import models
+from tinymce.models import HTMLField
 
 # Create your models here.
 class Subscriber(models.Model):
@@ -10,7 +11,7 @@ class Subscriber(models.Model):
 
 class Campaign(models.Model):
     subject = models.CharField(max_length=255)
-    body = models.TextField()
+    body = HTMLField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

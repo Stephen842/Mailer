@@ -103,7 +103,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-semibold mb-2 text-gray-700">Body</label>
-                        {{ form.body | add_class:"w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-1 focus:ring-green-500" | attr:"placeholder:Type your message here..." | attr:"rows:6" }}
+                        {{ form.body }}
                     </div>
                     <button type="submit" class="inline-block bg-green-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-green-700 transition">Send Message</button>
                 </form>
@@ -111,5 +111,6 @@
             <!-- Footer -->
             <p class="text-gray-500 text-xs text-center py-6">Mailer MVP • Crafted with ❤️ by OwlphaDAO</p>
         </main>
+        <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     </body>
 </html>
