@@ -95,36 +95,38 @@
             <div class="flex-grow flex flex-col justify-start p-10">
                 <div class="max-w-5xl w-full mx-auto p-8 bg-white rounded-xl shadow-lg">
                     <div class="flex justify-between items-center mb-6">
-                        <h1 class="text-3xl font-bold text-gray-800">All Subscribers</h1>
-                        <a href="{% url 'create_campaign' %}" class="inline-flex items-center gap-2 bg-green-600 text-white px-5 py-2 rounded-full shadow hover:bg-green-700 transition-all duration-200">
+                        <h1 class="text-3xl font-bold text-gray-800">All Contacts</h1>
+                        <a href="{% url 'create_contact' %}" class="inline-flex items-center gap-2 bg-green-600 text-white px-5 py-2 rounded-full shadow hover:bg-green-700 transition-all duration-200">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path d="M12 4v16m8-8H4"></path>
                             </svg>
-                            Create Campaign
+                            Add Contact
                         </a>
                     </div>
 
                     <table class="min-w-full table-auto border border-gray-200 rounded-lg overflow-hidden">
                         <thead>
                             <tr class="bg-gray-100 text-left text-sm">
-                                <th class="px-4 py-3 font-semibold">Subject</th>
+                                <th class="px-4 py-3 font-semibold">Name</th>
+                                <th class="px-4 py-3 font-semibold">Phone Number</th>
                                 <th class="px-4 py-3 font-semibold">Date Created</th>
                                 <th class="px-4 py-3 font-semibold">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200 text-sm">
-                            {% for campaign in campaigns %}
+                            {% for subscriber in contacts %}
                             <tr>
-                                <td class="px-4 py-3">{{ campaign.subject }}</td>
-                                <td class="px-4 py-3">{{ campaign.created_at }}</td>
+                                <td class="px-4 py-3">{{ subscriber.name }}</td>
+                                <td class="px-4 py-3">{{ subscriber.phone_number }}</td>
+                                <td class="px-4 py-3">{{ subscriber.created_at }}</td>
                                 <td class="px-4 py-3 space-x-4">
-                                    <a href="{% url 'campaign_view' campaign.pk %}" class="inline-block text-blue-600 font-medium hover:underline">View Campaign</a>
-                                    <a href="{% url 'delete_campaign' campaign.pk %}" class="inline-block text-red-600 font-medium hover:underline" onclick="return confirm('Are you sure?');">Delete</a>
+                                    <a href="#" class="inline-block text-blue-600 font-medium hover:underline">Send WhatsApp Message</a>
+                                    <a href="{% url 'delete_contact' subscriber.pk %}" class="inline-block text-red-600 font-medium hover:underline" onclick="return confirm('Are you sure?');">Delete</a>
                                 </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="3" class="px-4 py-4 text-center text-gray-500">No campaign yet.</td>
+                                <td colspan="3" class="px-4 py-4 text-center text-gray-500">No contact yet.</td>
                             </tr>
                             {% endfor %}
                         </tbody>

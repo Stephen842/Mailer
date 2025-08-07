@@ -1,6 +1,7 @@
 from django import forms
 from tinymce.widgets import TinyMCE
-from .models import Subscriber, Campaign
+from phonenumber_field.formfields import PhoneNumberField
+from .models import Subscriber, Campaign, WhatsappContact, WhatsappMessage
 
 class SubscriberForm(forms.ModelForm):
     class Meta:
@@ -39,3 +40,48 @@ class CampaignForm(forms.ModelForm):
 class SendMessageForm(forms.Form):
     subject = forms.CharField(max_length=255)
     body = forms.CharField(widget=TinyMCE(attrs={'cols': 70, 'rows': 20}))
+
+
+class WhatsappContactForm(forms.ModelForm):
+    class Meta:
+        model = WhatsappContact
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for i in range(1, 21):
+            self.fields[f'name_{i}'] = forms.CharField(required=False, label=f'Name {i}')
+            self.fields[f'phone_{i}'] = PhoneNumberField(required=False, label=f'Phone Number {i}')
+
+    @property
+    def name_phone_pairs(self):
+        pairs = []
+        for i in range(1, 21):
+            name_field = self[f'name_{i}']
+            phone_field = self[f'phone_{i}']
+            pairs.append((name_field, phone_field))
+        return pairs
+
+    def clean(self):
+        cleaned_data = super().clean()
+        self.valid_contacts = []
+
+        for i in range(1, 21):
+            name = cleaned_data.get(f'name_{i}')
+            phone = cleaned_data.get(f'phone_{i}')
+
+            if name and phone:
+                if not WhatsappContact.objects.filter(phone_number=phone).exists():
+                    self.valid_contacts.append({'name': name, 'phone_number': phone})
+
+        return cleaned_data
+
+    def save_contact(self):
+        return WhatsappContact.objects.bulk_create(
+            [WhatsappContact(name=entry['name'], phone_number=entry['phone_number']) for entry in self.valid_contacts]
+        )
+
+class WhatsappMessageForm(forms.ModelForm):
+    class Meta:
+        model = WhatsappMessage
+        fields = '__all__'

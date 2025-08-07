@@ -7,8 +7,8 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.contrib import messages
 
-from .models import Subscriber, Campaign, SiteStats
-from .forms import SubscriberForm, MultiEmailForm, CampaignForm, SendMessageForm
+from .models import Subscriber, Campaign, SiteStats, WhatsappContact, WhatsappMessage
+from .forms import SubscriberForm, MultiEmailForm, CampaignForm, SendMessageForm, WhatsappContactForm, WhatsappMessageForm
 
 def add_subscriber(request):
     """Handle adding a new subscriber email."""
@@ -232,3 +232,62 @@ def delete_campaign(request, pk):
     campaign.delete()
     messages.success(request, f'Deleted campaign: {campaign.subject}')
     return redirect('campaign_list')
+
+def contact_list(request):
+    """Contact List Page"""
+    contacts = WhatsappContact.objects.all().order_by('created_at')
+
+    context = {
+        'contacts': contacts,
+        'title': 'Contact List | Mailer',
+    }
+
+    return render(request, 'pages/contact_list.html', context)
+
+def create_contact(request):
+    """Handle adding of contact."""
+    if request.method == 'POST':
+        form = WhatsappContactForm(request.POST)
+        if form.is_valid():
+            form.save_contact()
+            messages.success(request, "Contacts added successfully!")
+            return redirect('contact_list')
+    else:
+        form = WhatsappContactForm()
+
+    context = {
+        'form': form,
+        'title': 'Create New Contact | Mailer',
+    }
+
+    return render(request, 'pages/create_contact.html', context)
+
+def delete_contact(request, pk):
+    """Handles deleting contact"""
+    contact = get_object_or_404(WhatsappContact, pk=pk)
+    contact.delete()
+    messages.success(request, f'Deleted campaign: {contact.name}')
+    return redirect('contact_list')
+
+def send_whatsapp_message(request):
+    if request.method == 'POST':
+        form = WhatsappMessageForm(request.POST)
+        if form.is_valid():
+            message_instance = form.save()
+
+            contacts = WhatsappContact.objects.all()
+            for contact in contacts:
+                personalized_message = message_instance.message.replace('{{name}}', contact.name)
+
+            messages.success(request, 'WhatsApp Campaign Sent Successfully')
+            return redirect('contact_list')
+        
+    else:
+        form = WhatsappMessageForm()
+
+    context = {
+        'form': form,
+        'title': 'Send WhatsApp Campaign',
+    }
+
+    return render(request, 'pages/send_whatsapp.html', context)

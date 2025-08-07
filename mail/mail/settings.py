@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'MailApp',
     'tinymce',
     'widget_tweaks',
+    'phonenumber_field',
     'django_browser_reload',
     'django.contrib.humanize',
 ]
@@ -113,7 +114,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Lagos'
 
 USE_I18N = True
 
