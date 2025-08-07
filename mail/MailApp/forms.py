@@ -33,9 +33,9 @@ class CampaignForm(forms.ModelForm):
         model = Campaign
         fields = ['subject', 'body']
         widgets = {
-            'body': TinyMCE(attrs={'cols': 100, 'rows': 20}),
+            'body': TinyMCE(attrs={'cols': 70, 'rows': 20}),
         }
 
 class SendMessageForm(forms.Form):
     subject = forms.CharField(max_length=255)
-    body = forms.CharField(widget=forms.Textarea)
+    body = forms.CharField(widget=TinyMCE(attrs={'cols': 70, 'rows': 20}))

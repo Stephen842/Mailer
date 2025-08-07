@@ -93,17 +93,18 @@
 
         <!-- Main Content -->
         <main class="flex-1 ml-64 flex flex-col min-h-screen overflow-y-auto">
-            <div class="max-w-2xl mx-auto p-8 bg-white rounded-xl shadow-lg mt-10">
+            <div class="w-3/4 mx-auto p-8 bg-white rounded-xl shadow-lg mt-10">
                 <h1 class="text-2xl font-semibold mb-6 text-gray-700">Send Message to {{ subscriber.email }}</h1>
                 <form method="post" class="space-y-6">
                     {% csrf_token %}
+                    {{ form.media }}
                     <div>
                         <label class="block text-sm font-semibold mb-2 text-gray-700">Subject</label>
                         {{ form.subject | add_class:"w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-1 focus:ring-green-500" | attr:"placeholder:Subject..."}}
                     </div>
                     <div>
                         <label class="block text-sm font-semibold mb-2 text-gray-700">Body</label>
-                        {{ form.body | add_class:"w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-1 focus:ring-green-500" | attr:"placeholder:Type your message here..." | attr:"rows:6" }}
+                        {{ form.body }}
                     </div>
                     <button type="submit" class="inline-block bg-green-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-green-700 transition">Send Message</button>
                 </form>
