@@ -20,6 +20,6 @@ urlpatterns = [
     path('contacts/', views.contact_list, name='contact_list'),
     path('contact/create/', views.create_contact, name='create_contact'),
     path('contacts/<int:pk>/delete', views.delete_contact, name='delete_contact'),
-    path('contact/send/<int:campaign_id>/', views.send_whatsapp_message, name='send_whatsapp_message'),
+    path('contact/send/', views.send_whatsapp_message, name='send_whatsapp_message'),
 
 ]

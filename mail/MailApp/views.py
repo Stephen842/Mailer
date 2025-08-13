@@ -279,6 +279,8 @@ def send_whatsapp_message(request):
             for contact in contacts:
                 personalized_message = message_instance.message.replace('{{name}}', contact.name)
 
+                print(f"Sending to {contact.phone_number}: {personalized_message}")
+
             messages.success(request, 'WhatsApp Campaign Sent Successfully')
             return redirect('contact_list')
         
@@ -287,7 +289,7 @@ def send_whatsapp_message(request):
 
     context = {
         'form': form,
-        'title': 'Send WhatsApp Campaign',
+        'title': 'Send WhatsApp Campaign | Mailer',
     }
 
     return render(request, 'pages/send_whatsapp.html', context)
