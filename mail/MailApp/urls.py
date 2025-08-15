@@ -22,4 +22,5 @@ urlpatterns = [
     path('contacts/<int:pk>/delete', views.delete_contact, name='delete_contact'),
     path('contact/send/', views.send_whatsapp_message, name='send_whatsapp_message'),
 
+    path('tinymce-upload/', views.tinymce_upload, name='tinymce_upload'),
 ]

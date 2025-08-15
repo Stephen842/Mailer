@@ -6,6 +6,13 @@ from django.conf import settings
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json
+import cloudinary.uploader
+import cloudinary
+import cloudinary.api
+
 
 from .models import Subscriber, Campaign, SiteStats, WhatsappContact, WhatsappMessage
 from .forms import SubscriberForm, MultiEmailForm, CampaignForm, SendMessageForm, WhatsappContactForm, WhatsappMessageForm
@@ -293,3 +300,25 @@ def send_whatsapp_message(request):
     }
 
     return render(request, 'pages/send_whatsapp.html', context)
+
+@csrf_exempt
+def tinymce_upload(request):
+    """
+    Handle TinyMCE image uploads and store them directly in Cloudinary.
+    """
+    if request.method == 'POST' and request.FILES.get('file'):
+        file_obj = request.FILES['file']
+
+        try:
+            # Upload to Cloudinary
+            result = cloudinary.uploader.upload(
+                file_obj,
+                folder="tinymce_uploads",
+                resource_type="auto"
+            )
+        
+            return JsonResponse({'location': result.get('secure_url')})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+        
+    return JsonResponse({'error': 'Invalid request'}, status=400)

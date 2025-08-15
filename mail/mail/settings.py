@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 from decouple import config
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,6 +48,8 @@ INSTALLED_APPS = [
     'phonenumber_field',
     'django_browser_reload',
     'django.contrib.humanize',
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 MIDDLEWARE = [
@@ -162,7 +167,18 @@ TINYMCE_DEFAULT_CONFIG = {
     'height': 400,
     'width': '100%',
     'menubar': 'file edit view insert format tools table help',
-    'plugins': 'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount',
+    'plugins': 'advlist autolink lists link image imagetools uploadimage charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount',
     'toolbar': 'undo redo | formatselect | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help | link image',
     'image_advtab': True,
+    'automatic_uploads': True,
+    'file_picker_types': 'image',
+    'images_upload_url': '/tinymce-upload/',
 }
+
+
+cloudinary.config( 
+    cloud_name = config('CLOUD_NAME'),
+    api_key = config('API_KEY'),
+    api_secret = config('API_SECRET'),
+    secure = True
+)
