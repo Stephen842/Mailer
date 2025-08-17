@@ -26,26 +26,47 @@
 
         <title> {{title}} </title>
     </head>
-    <body class="flex items-center justify-center min-h-screen">
-        <div class="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full relative">
-            <button class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl">&times;</button>
-
-            <!-- Image placeholder -->
-            <div class="flex justify-center mb-1">
-                <img src="https://media.licdn.com/dms/image/v2/D4D0BAQHUyn95gj3h1A/company-logo_200_200/company-logo_200_200/0/1708529125650?e=1756944000&v=beta&t=I1o-tPph7ojP9QZQuo7DZQyoFaOYWpSl2leumF_oxIk" alt="OwlphaDAO" class="w-32 h-32 object-contain">
+    <body class="relative flex items-center justify-center min-h-screen">
+        <!-- Background Video -->
+        <video autoplay muted loop playsinline class="absolute inset-0 w-full h-full object-cover z-0">
+            <source src="{% static 'owlphadao background.mp4' %}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    
+        <!-- Overlay -->
+        <div class="absolute inset-0 bg-black bg-opacity-20 z-10"></div>
+    
+        <!-- Content -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-6 sm:p-8 md:p-10 max-w-lg sm:max-w-xl md:max-w-2xl w-full relative z-20 border border-yellow-700 mx-4">
+    
+            <!-- Close Button -->
+            <button class="absolute top-4 right-4 text-gray-300 hover:text-white text-2xl font-bold">&times;</button>
+    
+            <!-- Logo -->
+            <div class="flex justify-center mb-6">
+                <img src="https://media.licdn.com/dms/image/v2/D4D0BAQHUyn95gj3h1A/company-logo_200_200/company-logo_200_200/0/1708529125650?e=1756944000&v=beta&t=I1o-tPph7ojP9QZQuo7DZQyoFaOYWpSl2leumF_oxIk"
+                     alt="OwlphaDAO"
+                     class="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-full object-cover drop-shadow-lg">
             </div>
-
+    
             <!-- Headline -->
-            <h2 class="text-2xl font-bold mb-2 text-center">Join us</h2>
-            <p class="text-gray-600 mb-6 text-center">
-                Subscribe to our newsletter for exclusive industry insights, early updates, and trusted community news. Stay ahead with us.
+            <h2 class="text-2xl sm:text-3xl font-extrabold mb-3 text-center text-white tracking-wide">
+                Join Us
+            </h2>
+            <p class="text-gray-200 mb-8 text-center leading-relaxed max-w-md mx-auto text-sm sm:text-base">
+                Subscribe to our newsletter for
+                <span class="text-yellow-600 font-semibold">exclusive insights</span>, early updates,
+                and trusted community news. Stay ahead with us.
             </p>
-
+    
             <!-- Form -->
-            <form method="post" class="flex">
+            <form method="post" class="flex flex-col sm:flex-row gap-3 sm:gap-0">
                 {% csrf_token %}
-                <input type="email" name="email" placeholder="Enter your email address..." required class="flex-grow border border-gray-300 rounded-l-full px-4 py-2 outline-none focus:ring-1"/>
-                <button type="submit"  class="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-6 shadow font-semibold rounded-r-full hover:opacity-90 transition">
+                <input type="email" name="email" placeholder="Enter your email address..." required
+                       class="flex-grow border border-gray-500/50 bg-white/20 text-white placeholder-gray-400 rounded-full sm:rounded-l-full sm:rounded-r-none px-5 py-3 outline-none focus:ring-1 focus:ring-yellow-600 focus:border-transparent">
+    
+                <button type="submit"
+                        class="bg-gradient-to-r from-yellow-700 to-yellow-500 hover:from-yellow-800 hover:to-yellow-600 transition text-white px-6 sm:px-8 py-3 shadow-lg font-semibold rounded-full sm:rounded-r-full sm:rounded-l-none hover:opacity-90 transition-all">
                     Subscribe
                 </button>
             </form>

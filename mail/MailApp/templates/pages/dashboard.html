@@ -117,7 +117,7 @@
                     <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-8 text-center shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300">
                         <h2 class="text-2xl font-bold mb-3 text-green-900">Total Campaigns</h2>
                         <p class="text-5xl font-extrabold text-green-700 mb-6">{{ total_campaigns }}</p>
-                        <a href="#" class="inline-block bg-green-600 text-white px-6 py-2 rounded-full shadow hover:bg-green-700 transition-colors duration-200">
+                        <a href="{% url 'campaign_list' %}" class="inline-block bg-green-600 text-white px-6 py-2 rounded-full shadow hover:bg-green-700 transition-colors duration-200">
                             Manage Campaigns
                         </a>
                     </div>
