@@ -27,16 +27,33 @@
         <title> Subscription Successful | OwlphaDAO </title>
     </head>
     
-    <body class="flex items-center justify-center min-h-screen">
-        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
-            <!-- Image placeholder -->
-            <div class="flex justify-center mb-1">
-                <img src="https://media.licdn.com/dms/image/v2/D4D0BAQHUyn95gj3h1A/company-logo_200_200/company-logo_200_200/0/1708529125650?e=1756944000&v=beta&t=I1o-tPph7ojP9QZQuo7DZQyoFaOYWpSl2leumF_oxIk" alt="OwlphaDAO" class="w-32 h-32 object-contain">
+    <body class="relative flex items-center justify-center min-h-screen">
+        <!-- Background Video -->
+        <video autoplay muted loop playsinline class="absolute inset-0 w-full h-full object-cover z-0">
+            <source src="{% static 'owlphadao background.mp4' %}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    
+        <!-- Overlay -->
+        <div class="absolute inset-0 bg-black bg-opacity-20 z-10"></div>
+    
+        <!-- Content -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-6 sm:p-8 md:p-10 max-w-lg sm:max-w-xl md:max-w-2xl w-full relative z-20 border border-yellow-700 mx-4">
+    
+            <!-- Close Button -->
+            <button class="absolute top-4 right-4 text-gray-300 hover:text-white text-2xl font-bold">&times;</button>
+    
+            <!-- Logo -->
+            <div class="flex justify-center mb-6">
+                <img src="https://media.licdn.com/dms/image/v2/D4D0BAQHUyn95gj3h1A/company-logo_200_200/company-logo_200_200/0/1708529125650?e=1756944000&v=beta&t=I1o-tPph7ojP9QZQuo7DZQyoFaOYWpSl2leumF_oxIk" alt="OwlphaDAO" class="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-full object-cover drop-shadow-lg">
             </div>
-
-            <h2 class="text-2xl font-semibold mb-2">Subscription Successful</h2>
-            <p class="text-gray-600 mb-6 leading-relaxed">
-                Thank you for subscribing! You’ll now receive exclusive updates and insights from <strong>OwlphaDAO</strong> straight to your inbox.
+    
+            <!-- Headline -->
+            <h2 class="text-2xl sm:text-3xl font-semibold mb-3 text-center text-white tracking-wide">
+                Subscription Successful
+            </h2>
+            <p class="text-gray-200 mb-8 text-center leading-relaxed max-w-md mx-auto text-sm sm:text-base">
+                Thank you for subscribing! You’ll now receive exclusive updates and insights from <strong class="text-yellow-600">OwlphaDAO</strong> straight to your inbox.
             </p>
         </div>
     </body>
