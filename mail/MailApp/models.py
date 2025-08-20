@@ -40,3 +40,37 @@ class WhatsappMessage(models.Model):
 
     def __str__(self):
         return f"Message from {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+ 
+    
+class Future_Of_Work(models.Model):
+    COURSE_CHOICES = [
+        ('', 'Select course type...'),
+        ('web3', 'Web3 Fundamentals'),
+        ('dao', 'DAO Governance'),
+        ('metaverse', 'Metaverse Collaboration'),
+        ('blockchain', 'Blockchain Development'),
+    ]
+
+    PLAN_CHOICES = [
+        ('', 'Select plan...'),
+        ('basic', 'Basic Plan'),
+        ('pro', 'Pro Plan'),
+        ('exclusive', 'Exclusive'),
+    ]
+
+    EXPERTISE_CHOICES = [
+        ('', 'Select your level...'),
+        ('beginner', 'Beginner'),
+        ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced'),
+    ]
+
+    name = models.CharField(max_length=50)
+    email = models.EmailField(blank=False)
+    phone = PhoneNumberField(unique=True)
+    course_type = models.CharField(max_length=20, choices=COURSE_CHOICES, default="")
+    plan_preference = models.CharField(max_length=20, choices=PLAN_CHOICES, default="")
+    expertise = models.CharField(max_length=20, choices=EXPERTISE_CHOICES, default="")
+
+    def __str__(self):
+        return f"{self.name} - {self.course_type}"

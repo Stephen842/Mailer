@@ -23,4 +23,6 @@ urlpatterns = [
     path('contact/send/', views.send_whatsapp_message, name='send_whatsapp_message'),
 
     path('tinymce-upload/', views.tinymce_upload, name='tinymce_upload'),
+
+    path('future-of-work/subscribe/', views.future_of_work, name='future_of_work_subscribe'),
 ]

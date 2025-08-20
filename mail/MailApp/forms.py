@@ -1,7 +1,7 @@
 from django import forms
 from tinymce.widgets import TinyMCE
 from phonenumber_field.formfields import PhoneNumberField
-from .models import Subscriber, Campaign, WhatsappContact, WhatsappMessage
+from .models import Subscriber, Campaign, WhatsappContact, WhatsappMessage, Future_Of_Work
 
 class SubscriberForm(forms.ModelForm):
     class Meta:
@@ -84,4 +84,9 @@ class WhatsappContactForm(forms.ModelForm):
 class WhatsappMessageForm(forms.ModelForm):
     class Meta:
         model = WhatsappMessage
+        fields = '__all__'
+
+class FutureOfWorkForm(forms.ModelForm):
+    class Meta:
+        model = Future_Of_Work
         fields = '__all__'

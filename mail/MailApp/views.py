@@ -15,7 +15,7 @@ import cloudinary.api
 
 
 from .models import Subscriber, Campaign, SiteStats, WhatsappContact, WhatsappMessage
-from .forms import SubscriberForm, MultiEmailForm, CampaignForm, SendMessageForm, WhatsappContactForm, WhatsappMessageForm
+from .forms import SubscriberForm, MultiEmailForm, CampaignForm, SendMessageForm, WhatsappContactForm, WhatsappMessageForm, FutureOfWorkForm
 
 def add_subscriber(request):
     """Handle adding a new subscriber email."""
@@ -322,3 +322,19 @@ def tinymce_upload(request):
             return JsonResponse({'error': str(e)}, status=500)
         
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+def future_of_work(request):
+    if request.method == 'POST':
+        form = FutureOfWorkForm(request.POST)
+        if form.is_valid():
+            form.save()   
+    else:
+        form = FutureOfWorkForm()
+
+    context = {
+        'form': form,
+        'title': 'Subscription Form | Future of Work',
+    }
+
+    return render(request, 'pages/future.html', context)
