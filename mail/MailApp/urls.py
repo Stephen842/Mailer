@@ -25,4 +25,8 @@ urlpatterns = [
     path('tinymce-upload/', views.tinymce_upload, name='tinymce_upload'),
 
     path('future-of-work/subscribe/', views.future_of_work, name='future_of_work_subscribe'),
+    path('registration/success/', views.future_of_work_subscription_success, name='subscription_success'),
+    path('registration/failed/', views.future_of_work_subscription_cancel, name='subscription_failed'),
+    path("subscribe/payment/<int:pk>/", views.payment_selection, name="payment_selection"),
+    path("start-payment/<int:pk>/<str:gateway>/", views.start_payment, name="start_payment"),
 ]

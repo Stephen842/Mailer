@@ -7,14 +7,16 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 import json
 import cloudinary.uploader
 import cloudinary
 import cloudinary.api
+from decimal import Decimal
+import requests
+from django.urls import reverse
 
-
-from .models import Subscriber, Campaign, SiteStats, WhatsappContact, WhatsappMessage
+from .models import Subscriber, Campaign, SiteStats, WhatsappContact, WhatsappMessage, Future_Of_Work
 from .forms import SubscriberForm, MultiEmailForm, CampaignForm, SendMessageForm, WhatsappContactForm, WhatsappMessageForm, FutureOfWorkForm
 
 def add_subscriber(request):
@@ -328,13 +330,147 @@ def future_of_work(request):
     if request.method == 'POST':
         form = FutureOfWorkForm(request.POST)
         if form.is_valid():
-            form.save()   
+            subscription = form.save(commit=False)
+
+            # default status: pending
+            subscription.status = 'pending'
+            subscription.save()
+
+            # redirect depending on plan fee
+            if subscription.fee == Decimal("0.00"):
+                subscription.status = 'active'
+                subscription.save()
+                return redirect('subscription_success')  # free → success
+            else:
+                return redirect('payment_selection', pk=subscription.id)  # paid → payment page
     else:
         form = FutureOfWorkForm()
 
     context = {
         'form': form,
+        'plan_fees': Future_Of_Work.PLAN_FEES,
         'title': 'Subscription Form | Future of Work',
     }
 
     return render(request, 'pages/future.html', context)
+
+def future_of_work_subscription_success(request):
+    context = {
+        'title': 'Subscription Confirmed | Future of Work',
+    }
+    return render(request, "pages/subscription_success.html", context)
+
+def future_of_work_subscription_cancel(request):
+    context = {
+        'title': 'Subscription Failed | Future of Work',
+    }
+    return render(request, "pages/subscription_failed.html", context)
+
+def payment_selection(request, pk):
+    subscription = Future_Of_Work.objects.get(pk=pk)
+
+    payment_methods = [
+        {
+            'name': 'Helio', 
+            'description': 'A Web3-native payment gateway for fast, secure, and crypto-friendly transactions.',
+            'image_url': 'helio.png'
+        },
+        {
+            'name': 'Remita', 
+            'description': 'Trusted payment solution widely used for government, corporate, and local transactions.',
+            'image_url': 'remita.svg'
+        },
+        {
+            'name': 'Opay', 
+            'description': 'A popular mobile wallet enabling easy and convenient everyday payments.',
+            'image_url': 'opay.png'
+        },
+    ]
+
+    context = {
+        'subscription': subscription,
+        'payment_methods': payment_methods,
+        'title': f"Payment Selection | {subscription.plan_preference.title()} Plan",
+    }
+    return render(request, "pages/payment_selection.html", context)
+
+def start_payment(request, pk, gateway):
+    subscription = get_object_or_404(Future_Of_Work, pk=pk)
+    subscription.gateway = gateway
+    subscription.save()
+
+    if gateway == 'helio':
+        success_url = request.build_absolute_uri(reverse('subscription_success'))
+        cancel_url = request.build_absolute_uri(reverse('subscription_failed'))
+
+        response  = create_helio_checkout(
+            amount=subscription.fee,
+            currency='usdt',
+            customer_email=subscription.email,
+            success_url=success_url,
+            cancel_url=cancel_url,
+        )
+
+        if 'error' in response:
+            subscription.status = 'failed'
+            subscription.save()
+            return render(request, 'pages/subscription_failed.html', {"error": response["error"]})
+        
+        url = response.get('url')
+        if url:
+            return redirect(url)
+        else:
+            subscription.status = 'failed'
+            subscription.save()
+            return render(request, "pages/error.html", {"error": "We couldn’t create a checkout session at the moment. Please try again later."})
+    
+    elif gateway == "remita":
+        # TODO: integrate Remita checkout here
+        return HttpResponse("Remita integration coming soon.")
+
+    elif gateway == "opay":
+        # TODO: integrate Opay checkout here
+        return HttpResponse("Opay integration coming soon.")
+
+    return render(request, "pages/subscription_failed.html", {"error": "Unsupported payment gateway."})
+
+        
+
+def create_helio_checkout(amount, currency='usdt', customer_email=None, success_url=None, cancel_url=None, subscription_type="monthly"):
+    '''
+    Creates a Helio Checkout Session
+    '''
+
+    HELIO_API_URL = "https://api.hel.io/v1/checkout"
+
+    headers = {
+        'Authorization': f'Bearer {settings.HELIO_API_KEY}',
+        'Content-Type': 'application/json'
+    }
+
+    payload = {
+        'title': f'Future Of Work - {subscription_type.capitalize()} Subscription',
+        'price': {
+            'amount': str(amount),
+            'currency': currency
+        },
+        'type': 'payment',
+        'collectEmail': True,
+        'successUrl': success_url,
+        'cancelUrl': cancel_url,
+        'metadata': {
+            'platform': 'Future Of Work',
+            "subscription_type": subscription_type,
+        }
+    }
+
+    if customer_email:
+        payload['customerEmail'] = customer_email
+
+    try:
+        response = requests.post(HELIO_API_URL, headers=headers, json=payload, timeout=30)
+        response.raise_for_status()
+        return response.json()
+    
+    except requests.RequestException as e:
+        return {'error': str(e)}

@@ -46,7 +46,7 @@
             <!-- Navbar -->
             <nav class="flex items-center justify-between w-full px-12 py-8 bg-white">
                 <!-- Logo -->
-                <img src="{% static 'Future OF Works.png' %}" alt="Logo" class="w-32 h-4 object-contain">
+                <img src="{% static 'Future OF Works.png' %}" alt="OwlphaDAO Future of Work Logo" class="w-32 h-4 object-contain">
 
                 <!-- Navigation Links -->
                 <a href="https://owlphadao.com/about" class="px-4 py-2 bg-yellow-700 text-white font-extrabold rounded-2xl cursor-pointer transition duration-400 hover:bg-yellow-500 text-sm md:text-base">
@@ -76,7 +76,8 @@
                     </div>
 
                     <!-- Form -->
-                    <form class="space-y-5 text-gray-700">
+                    <form method="post" class="space-y-5 text-gray-700">
+                        {% csrf_token %}
                         <!-- Full Name & Email -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
@@ -86,6 +87,9 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Email address</label>
                                 {{ form.email|add_class:"w-full rounded-lg border border-gray-300 focus:ring-1 focus:ring-yellow-700 focus:border-amber-500 transition duration-300 outline-none px-4 py-2 text-sm sm:text-base" |attr:"placeholder:you@example.com" }}
+                                {% for error in form.email.errors %}
+                                    <p class="text-red-600 text-sm mt-1">{{ error }}</p>
+                                {% endfor %}
                             </div>
                         </div>
 
@@ -93,6 +97,9 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Phone number (optional)</label>
                             {{ form.phone|add_class:"w-full rounded-lg border border-gray-300 focus:ring-1 focus:ring-yellow-700 focus:border-amber-500 transition duration-300 outline-none px-4 py-2 text-sm sm:text-base" |attr:"placeholder:+1 234567890" }}
+                            {% for error in form.phone.errors %}
+                                <p class="text-red-600 text-sm mt-1">{{ error }}</p>
+                            {% endfor %}
                         </div>
 
                         <!-- Course & Plan -->
@@ -116,16 +123,16 @@
 
                         <!-- Button -->
                         <div>
-                            <button type="submit" class="button1 w-full py-3 bg-yellow-700 text-white font-semibold rounded-lg shadow-lg hover:bg-amber-700 transform hover:-translate-y-1 hover:shadow-2xl transition duration-300 text-sm sm:text-base">
-                                Submit
+                            <button type="submit" name="action" value="free" class="button1 w-full py-3 bg-yellow-700 text-white font-semibold rounded-lg shadow-lg hover:bg-amber-700 transform hover:-translate-y-1 hover:shadow-2xl transition duration-300 text-sm sm:text-base">
+                                Free Tier (${{ plan_fees.free }})
                             </button>
 
-                            <button type="submit" class="button2 hidden w-full py-3 bg-yellow-700 text-white font-semibold rounded-lg shadow-lg hover:bg-amber-700 transform hover:-translate-y-1 hover:shadow-2xl transition duration-300 text-sm sm:text-base">
-                                Contact Us
+                            <button type="submit" name="action" value="exclusive" class="button2 hidden w-full py-3 bg-yellow-700 text-white font-semibold rounded-lg shadow-lg hover:bg-amber-700 transform hover:-translate-y-1 hover:shadow-2xl transition duration-300 text-sm sm:text-base">
+                               Exclusive Tier – ${{ plan_fees.exclusive }}/month
                             </button>
 
-                            <button type="submit" class="button3 hidden w-full py-3 bg-yellow-700 text-white font-semibold rounded-lg shadow-lg hover:bg-amber-700 transform hover:-translate-y-1 hover:shadow-2xl transition duration-300 text-sm sm:text-base">
-                                Pay Now
+                            <button type="submit" name="action" value="pro" class="button3 hidden w-full py-3 bg-yellow-700 text-white font-semibold rounded-lg shadow-lg hover:bg-amber-700 transform hover:-translate-y-1 hover:shadow-2xl transition duration-300 text-sm sm:text-base">
+                                Pro Tier – ${{ plan_fees.pro }}/month
                             </button>
                         </div>
                     </form>
