@@ -182,5 +182,3 @@ cloudinary.config(
     api_secret = config('API_SECRET'),
     secure = True
 )
-
-HELIO_API_KEY = config('HELIO_API_KEY')

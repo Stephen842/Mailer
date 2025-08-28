@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
+from django.utils.timezone import now
 import json
 import cloudinary.uploader
 import cloudinary
@@ -358,13 +359,17 @@ def future_of_work_subscription_success(request):
     context = {
         'title': 'Subscription Confirmed | Future of Work',
     }
-    return render(request, "pages/subscription_success.html", context)
+    return render(request, 'pages/subscription_success.html', context)
 
-def future_of_work_subscription_cancel(request):
+def future_of_work_subscription_cancel(request, pk):
+    subscription = None
+    if pk:
+        subscription = Future_Of_Work.objects.get(pk=pk)
     context = {
+        'subscription': subscription,
         'title': 'Subscription Failed | Future of Work',
     }
-    return render(request, "pages/subscription_failed.html", context)
+    return render(request, 'pages/subscription_failed.html', context)
 
 def payment_selection(request, pk):
     subscription = Future_Of_Work.objects.get(pk=pk)
@@ -392,7 +397,7 @@ def payment_selection(request, pk):
         'payment_methods': payment_methods,
         'title': f"Payment Selection | {subscription.plan_preference.title()} Plan",
     }
-    return render(request, "pages/payment_selection.html", context)
+    return render(request, 'pages/payment_selection.html', context)
 
 def start_payment(request, pk, gateway):
     subscription = get_object_or_404(Future_Of_Work, pk=pk)
@@ -400,29 +405,15 @@ def start_payment(request, pk, gateway):
     subscription.save()
 
     if gateway == 'helio':
-        success_url = request.build_absolute_uri(reverse('subscription_success'))
-        cancel_url = request.build_absolute_uri(reverse('subscription_failed'))
-
-        response  = create_helio_checkout(
-            amount=subscription.fee,
-            currency='usdt',
-            customer_email=subscription.email,
-            success_url=success_url,
-            cancel_url=cancel_url,
-        )
-
-        if 'error' in response:
-            subscription.status = 'failed'
-            subscription.save()
-            return render(request, 'pages/subscription_failed.html', {"error": response["error"]})
-        
-        url = response.get('url')
-        if url:
-            return redirect(url)
-        else:
-            subscription.status = 'failed'
-            subscription.save()
-            return render(request, "pages/error.html", {"error": "We couldn’t create a checkout session at the moment. Please try again later."})
+        # Show our custom Helio checkout page with the JS widget
+        context = {
+           "subscription": subscription,
+            "title": "Pay with Helio | Future of Work",
+            "user_email": subscription.email,
+            "amount": subscription.fee,
+            "currency": "USDT",
+        }
+        return render(request, 'pages/helio_checkout.html', context)     
     
     elif gateway == "remita":
         # TODO: integrate Remita checkout here
@@ -434,43 +425,48 @@ def start_payment(request, pk, gateway):
 
     return render(request, "pages/subscription_failed.html", {"error": "Unsupported payment gateway."})
 
+
+@csrf_exempt
+def helio_webhook(request):
+    if request.method == 'POST':
+        try:
+            payload = json.loads(request.body)
+            event_type = payload.get('eventType')
+            data = payload.get('data', {})
+
+            # Extract subscription ID from metadata if you send it
+            subscription_id = data.get('metadata', {}).get('subscription_id')
+
+            if subscription_id:
+                subscription = Future_Of_Work.objects.filter(pk=subscription_id).first()
+                if subscription:
+                    if event_type in ('PAYMENT_SUCCESS', 'PAYMENT_COMPLETED'):
+                        subscription.status = 'active'
+                        subscription.created_at = now()
+                        subscription.save()
+
+                    elif event_type in ('PAYMENT_FAILED', 'PAYMENT_CANCELLED'):
+                        subscription.status = 'failed'
+                        subscription.save()
+                        
+            return JsonResponse({'status': 'ok'})
+        except Exception as e:
+            return JsonResponse({'error': 'invalid request'}, status=400)
         
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
-def create_helio_checkout(amount, currency='usdt', customer_email=None, success_url=None, cancel_url=None, subscription_type="monthly"):
-    '''
-    Creates a Helio Checkout Session
-    '''
+def processing_payment(request, pk):
+    subscription = get_object_or_404(Future_Of_Work, pk=pk)
+    checkout_url = subscription.checkout_url
 
-    HELIO_API_URL = "https://api.hel.io/v1/checkout"
-
-    headers = {
-        'Authorization': f'Bearer {settings.HELIO_API_KEY}',
-        'Content-Type': 'application/json'
+    context = {
+        "subscription": subscription,
+        "checkout_url": checkout_url,
+        "title": "Processing Payment | Future of Work"
     }
 
-    payload = {
-        'title': f'Future Of Work - {subscription_type.capitalize()} Subscription',
-        'price': {
-            'amount': str(amount),
-            'currency': currency
-        },
-        'type': 'payment',
-        'collectEmail': True,
-        'successUrl': success_url,
-        'cancelUrl': cancel_url,
-        'metadata': {
-            'platform': 'Future Of Work',
-            "subscription_type": subscription_type,
-        }
-    }
+    return render(request, 'pages/processing_payment.html', context)
 
-    if customer_email:
-        payload['customerEmail'] = customer_email
-
-    try:
-        response = requests.post(HELIO_API_URL, headers=headers, json=payload, timeout=30)
-        response.raise_for_status()
-        return response.json()
-    
-    except requests.RequestException as e:
-        return {'error': str(e)}
+def check_subscription_status(request, pk):
+    subscription = get_object_or_404(Future_Of_Work, pk=pk)
+    return JsonResponse({'status': subscription.status})

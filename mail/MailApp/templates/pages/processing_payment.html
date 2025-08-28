@@ -33,7 +33,7 @@
                 to { opacity: 1; transform: translateY(0); }
             }
             .animate-fadeIn {
-                animation: fadeIn 0.9s ease-in-out;
+                animation: fadeIn 0.7s ease-in-out;
             }
         </style>
 
@@ -46,41 +46,42 @@
             <img src="{% static 'Future OF Works.png' %}" alt="OwlphaDAO Future of Work Logo" class="w-32 h-4 object-contain"/>
 
             <!-- Navigation Links -->
-            <a href="https://owlphadao.com/about" class="px-4 py-2 bg-yellow-700 text-white font-extrabold rounded-2xl cursor-pointer transition duration-400 hover:bg-yellow-800 text-sm md:text-base">
+            <a href="https://owlphadao.com/about" class="px-4 py-2 bg-yellow-700 text-white font-extrabold rounded-2xl cursor-pointer transition duration-400 hover:bg-yellow-500 text-sm md:text-base">
                 About Us
             </a>
         </nav>
 
-        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-yellow-600 border-opacity-75 mb-6"></div>
+        <!-- Main Section -->
+        <main class="flex flex-col items-center justify-center flex-grow text-center px-4">
+            <!-- Animated Spinner -->
+            <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-yellow-600 border-opacity-75 mb-6"></div>
 
-        <div class="min-h-screen flex items-center justify-center">
-            <div class="max-w-3xl w-full p-8 bg-white shadow-md rounded-2xl animate-fadeIn">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Select Payment Method</h2>
-                <p class="text-gray-600 mb-6">
-                    You have selected the <strong>{{ subscription.plan_preference|title }} Plan</strong> 
-                    at ${{ subscription.fee }} per month.
-                </p>
+            <!-- Message -->
+            <h2 class="text-2xl font-bold mb-4">Processing Your Payment...</h2>
+            <p class="text-gray-600 max-w-md">
+                We’re waiting for confirmation from the blockchain.  
+                This may take up to 2–3 minutes. Please don’t close this page — we’ll redirect you once confirmed.
+            </p>
+        </main>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {% for method in payment_methods %}
-                    <form method="post" action="{% url 'start_payment' subscription.id method.name|lower %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="payment_method" value="{{ method.name }}">
-                        <div class="p-6 bg-yellow-50 rounded-lg shadow-md hover:bg-yellow-100 transition flex flex-col items-center">
-                            
-                            <!-- Logo -->
-                            <img src="{% static method.image_url %}" alt="{{ method.name }} Logo" class="h-16 mb-4">
-                            
-                            <p class="text-gray-600 mb-4 text-center">{{ method.description }}</p>
-                            
-                            <button type="submit" class="w-full py-2 bg-yellow-700 text-white rounded-lg font-semibold hover:bg-amber-700 transition">
-                                Pay with {{ method.name }}
-                            </button>
-                        </div>
-                    </form>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
+        <!-- Script for polling -->
+        <script>
+            let elapsed = 0;
+            const interval = setInterval(async () => {
+                elapsed += 5;
+                const response = await fetch("{% url 'check_subscription_status' subscription.id %}");
+                const data = await response.json();
+                if (data.status === "active") {
+                    clearInterval(interval);
+                    window.location.href = "{% url 'subscription_success' %}";
+                } else if (data.status === "failed") {
+                    clearInterval(interval);
+                    window.location.href = "{% url 'subscription_failed' subscription.id %}";
+                } else if (elapsed >= 300) { // 5 min fallback
+                    clearInterval(interval);
+                    window.location.href = "{% url 'subscription_failed' subscription.id %}";
+                }
+            }, 5000);
+        </script>
     </body>
 </html>

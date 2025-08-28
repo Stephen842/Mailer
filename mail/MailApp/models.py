@@ -103,6 +103,7 @@ class Future_Of_Work(models.Model):
     plan_preference = models.CharField(max_length=20, choices=PLAN_CHOICES, default="")
     expertise = models.CharField(max_length=20, choices=EXPERTISE_CHOICES, default="")
     created_at = models.DateTimeField(auto_now_add=True)
+    checkout_url = models.URLField(null=True, blank=True)
 
     fee = models.DecimalField(max_digits=6, decimal_places=2, default=Decimal("0.00"))
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
