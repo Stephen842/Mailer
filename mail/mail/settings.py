@@ -182,3 +182,8 @@ cloudinary.config(
     api_secret = config('API_SECRET'),
     secure = True
 )
+
+OPAY_SECRET_KEY = config('OPAY_SECRET_KEY')
+OPAY_PUBLIC_KEY = config('OPAY_PUBLIC_KEY')
+OPAY_MERCHANT_ID = config('OPAY_MERCHANT_ID')
+OPAY_API_URL = config('OPAY_API_URL')

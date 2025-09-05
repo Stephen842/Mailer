@@ -80,8 +80,8 @@ class Future_Of_Work(models.Model):
 
     PLAN_FEES = {
         'basic': Decimal("0.00"),
-        'pro': Decimal("2.00"),
-        'exclusive': Decimal("20.00")
+        'pro': Decimal("1000.00"),
+        'exclusive': Decimal("2000.00")
     }
     
 
@@ -102,6 +102,7 @@ class Future_Of_Work(models.Model):
     course_type = models.CharField(max_length=20, choices=COURSE_CHOICES, default="")
     plan_preference = models.CharField(max_length=20, choices=PLAN_CHOICES, default="")
     expertise = models.CharField(max_length=20, choices=EXPERTISE_CHOICES, default="")
+    transaction_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     checkout_url = models.URLField(null=True, blank=True)
 

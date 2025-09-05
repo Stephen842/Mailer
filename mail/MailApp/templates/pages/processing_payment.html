@@ -59,8 +59,8 @@
             <!-- Message -->
             <h2 class="text-2xl font-bold mb-4">Processing Your Payment...</h2>
             <p class="text-gray-600 max-w-md">
-                We’re waiting for confirmation from the blockchain.  
-                This may take up to 2–3 minutes. Please don’t close this page — we’ll redirect you once confirmed.
+                We’re waiting for confirmation from the payment provider.  
+                This may take a few minutes. Please don’t close this page — we’ll redirect you once confirmed.
             </p>
         </main>
 
@@ -73,7 +73,7 @@
                 const data = await response.json();
                 if (data.status === "active") {
                     clearInterval(interval);
-                    window.location.href = "{% url 'subscription_success' %}";
+                    window.location.href = "{% url 'subscription_success' subscription.id %}";
                 } else if (data.status === "failed") {
                     clearInterval(interval);
                     window.location.href = "{% url 'subscription_failed' subscription.id %}";

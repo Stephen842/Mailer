@@ -94,7 +94,7 @@
                                     console.log("Payment Error:", error);
                                     window.location.href = "{% url 'subscription_failed' subscription.id %}";
                                 },
-                                onPending: event => console.log(event),
+                                onPending: event => console.log("Payment Pending:", event),
                                 onCancel: () => {
                                     console.log("Payment Cancelled");
                                     window.location.href = "{% url 'subscription_failed' subscription.id %}";

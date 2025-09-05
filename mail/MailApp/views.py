@@ -9,12 +9,9 @@ from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
 from django.utils.timezone import now
-import json
-import cloudinary.uploader
-import cloudinary
-import cloudinary.api
+from django.utils.dateparse import parse_datetime
+import json, hmac, hashlib, requests, cloudinary, cloudinary.uploader, cloudinary.api, time
 from decimal import Decimal
-import requests
 from django.urls import reverse
 
 from .models import Subscriber, Campaign, SiteStats, WhatsappContact, WhatsappMessage, Future_Of_Work
@@ -341,7 +338,7 @@ def future_of_work(request):
             if subscription.fee == Decimal("0.00"):
                 subscription.status = 'active'
                 subscription.save()
-                return redirect('subscription_success')  # free → success
+                return redirect('subscription_success', pk=subscription.id)  # free → success
             else:
                 return redirect('payment_selection', pk=subscription.id)  # paid → payment page
     else:
@@ -355,8 +352,12 @@ def future_of_work(request):
 
     return render(request, 'pages/future.html', context)
 
-def future_of_work_subscription_success(request):
+def future_of_work_subscription_success(request, pk):
+    subscription = None
+    if pk:
+        subscription = Future_Of_Work.objects.get(pk=pk)
     context = {
+        'subscription': subscription,
         'title': 'Subscription Confirmed | Future of Work',
     }
     return render(request, 'pages/subscription_success.html', context)
@@ -420,40 +421,190 @@ def start_payment(request, pk, gateway):
         return HttpResponse("Remita integration coming soon.")
 
     elif gateway == "opay":
-        # TODO: integrate Opay checkout here
-        return HttpResponse("Opay integration coming soon.")
+        # Generate and save your own merchant reference
+        reference = f'FutureOfWork-{subscription.pk}-{int(time.time())}'
+        subscription.transaction_id = reference
+        subscription.save()
+
+        payload = {
+            'countryCode': 'NG',
+            'reference': reference,
+            'amount': {
+                'currency': 'NGN',
+                'total': str(int(float(subscription.fee) * 100))
+            },
+            'product': {
+                'name': 'Future Of Work',
+                'description': subscription.plan_preference,
+            },
+            'returnUrl': request.build_absolute_uri(
+                reverse('processing_payment', args=[subscription.pk])
+            ),
+            'callbackUrl': request.build_absolute_uri(
+                reverse('opay_webhook')
+            ),
+            "cancelUrl": request.build_absolute_uri(
+                reverse("subscription_failed", args=[subscription.pk])
+            ),
+            "evokeOpay": False,
+            "customerVisitSource": "BROWSER",
+            "expireAt": 30,
+            'userInfo': {
+                'userid': str(subscription.pk),
+                'userEmail': subscription.email,
+                "userName": subscription.name,
+                "userMobile": str(subscription.phone),
+            },
+        }
+
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {settings.OPAY_SECRET_KEY}',
+            'MerchantId': settings.OPAY_MERCHANT_ID,
+        }
+        try:
+            url = f'{settings.OPAY_API_URL}/api/v1/international/cashier/create'
+            response = requests.post(
+                url,
+                headers=headers,
+                json=payload,
+                timeout=120,
+            )
+            response.raise_for_status()
+        except requests.RequestException as e:
+            return render(request, 'pages/subscription_failed.html', {'error': f'Network error: {e}', 'subscription': subscription})
+
+        try:
+            data = response.json()
+            print("🔍 OPay Response:", data)  # Debug
+        except ValueError:
+            return render(request, 'pages/subscription_failed.html', {'error': f'Invalid JSON response from Opay', 'subscription': subscription})
+        
+        if data.get('code') == '00000':
+            cashier_url = data['data'].get('cashierUrl')
+            subscription.checkout_url = cashier_url
+            subscription.transaction_id = data['data'].get("orderNo")
+            subscription.save()
+            return redirect(cashier_url)
+        else:
+            return render(request, 'pages/subscription_failed.html', {
+                'error': data.get('message', 'OPay init Failed'),
+                'subscription': subscription,
+            })
 
     return render(request, "pages/subscription_failed.html", {"error": "Unsupported payment gateway."})
 
 
 @csrf_exempt
 def helio_webhook(request):
-    if request.method == 'POST':
-        try:
-            payload = json.loads(request.body)
-            event_type = payload.get('eventType')
-            data = payload.get('data', {})
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request'}, status=400)
+    
+    try:
+        payload = json.loads(request.body)
+        print('Webhook Payload', payload) # Debugging
 
-            # Extract subscription ID from metadata if you send it
-            subscription_id = data.get('metadata', {}).get('subscription_id')
+        tx_obj = payload.get('transactionObject', {})
+        meta = tx_obj.get('meta', {})
+        tx_status = meta.get('transactionStatus', '').lower()
+        tx_id = tx_obj.get('id')
 
-            if subscription_id:
-                subscription = Future_Of_Work.objects.filter(pk=subscription_id).first()
-                if subscription:
-                    if event_type in ('PAYMENT_SUCCESS', 'PAYMENT_COMPLETED'):
-                        subscription.status = 'active'
-                        subscription.created_at = now()
-                        subscription.save()
-
-                    elif event_type in ('PAYMENT_FAILED', 'PAYMENT_CANCELLED'):
-                        subscription.status = 'failed'
-                        subscription.save()
-                        
-            return JsonResponse({'status': 'ok'})
-        except Exception as e:
-            return JsonResponse({'error': 'invalid request'}, status=400)
+        # Get customer email from webhook payload
+        customer_email = meta.get('customerDetails', {}).get('email')
         
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+        if not customer_email:
+            print("⚠️ No customer email found in webhook")
+            return JsonResponse({'status': 'ignored'})
+
+        subscription = Future_Of_Work.objects.filter(email=customer_email).first()
+        if not subscription:
+            print(f"⚠️ Subscription with email {customer_email} not found")
+            return JsonResponse({'status': 'ignored'})
+
+        # Update subscription based on transaction status
+        if tx_status == 'success':
+            
+            # Idempotency check: if we've already processed this transaction, skip
+            if subscription.transaction_id == tx_id:
+                return JsonResponse({'status': 'already processed'})
+            
+            created_at_str = tx_obj.get("createdAt")
+            subscription.created_at = (parse_datetime(created_at_str) if created_at_str else now()) # Use Helio timestamp if available   
+            subscription.status = 'active'
+            subscription.transaction_id = tx_id 
+            subscription.save()
+
+        elif tx_status in ('failed', 'cancelled', 'expired'):
+            subscription.status = 'failed'
+            subscription.transaction_id = tx_id
+            subscription.save()
+
+        else:
+            print(f"⚠️ Unhandled tx_status: {tx_status}")
+            return JsonResponse({'status': 'unhandled'})
+        
+        return JsonResponse({'status': 'ok'})  
+
+    except Exception as e:
+        print('Webhook Error:', str(e))
+        return JsonResponse({'status': 'ignored'})
+    
+@csrf_exempt
+def opay_webhook(request):
+    """
+    OPay webhook for Express (Cashier) flow.
+    """
+    if request.method != "POST":
+        return JsonResponse({"status": "invalid method"}, status=405)
+    
+    try:
+        payload = request.body.decode('utf-8')
+        data = json.loads(payload)
+        print('Webhook Payload', data) # Debugging
+
+        # Verify signature
+        received_sig = request.headers.get('Signature', '')
+        expected_sig = hmac.new(
+            settings.OPAY_PRIVATE_KEY.encode(),
+            payload.encode(),
+            hashlib.sha512
+        ).hexdigest()
+
+        if received_sig !=expected_sig:
+            print("⚠️ Signature mismatch", received_sig, expected_sig)
+            return JsonResponse({'status': 'Invalid signature'}, status=400)
+        
+        reference = data.get('orderNo') or data.get('reference')
+        order_status = data.get('status')
+
+        subscription = Future_Of_Work.objects.filter(transaction_id=reference).first()
+        if not subscription:
+            return JsonResponse({'status': 'Subscription not found'}, status=400)
+        
+        # Idempotency check
+        if subscription.status == 'active' and order_status == "SUCCESS":
+            return JsonResponse({'status': 'already processed'})
+
+        # Use OPay timestamp if available
+        tx_time = data.get("updateTime") or data.get("createdTime")
+        subscription.created_at = (parse_datetime(tx_time) if tx_time else now())
+        
+        # Update status
+        if order_status == 'SUCCESS':
+            subscription.status = 'active'
+        elif order_status in ['FAILED', 'CANCELLED', 'EXPIRED']:
+            subscription.status = 'failed'
+        else:
+            subscription.status = 'pending'
+        subscription.transaction_id = reference
+        subscription.save()
+
+        return JsonResponse({'status': 'ok'})
+    
+    except Exception as e:
+        print("Opay Webhook Error:", str(e))
+        return JsonResponse({'status': 'error'}, status=400)
+
 
 def processing_payment(request, pk):
     subscription = get_object_or_404(Future_Of_Work, pk=pk)
