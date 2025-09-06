@@ -400,6 +400,21 @@ def payment_selection(request, pk):
     }
     return render(request, 'pages/payment_selection.html', context)
 
+def convert_usd_to_local(amount_usd, target_currency="NGN"):
+    """
+    Convert USD to target currency using exchangerate.host API.
+    Fallback to static rate if API fails.
+    """
+    try:
+        url = f"https://api.exchangerate.host/convert?from=USD&to={target_currency}&amount={amount_usd}"
+        response = requests.get(url, timeout=10)
+        data = response.json()
+        return round(data["result"], 2)
+    except Exception:
+        # fallback if API fails (set your safe static rate here)
+        static_rates = {"NGN": 1600, "EGP": 50}
+        return round(amount_usd * static_rates.get(target_currency, 50), 2)
+
 def start_payment(request, pk, gateway):
     subscription = get_object_or_404(Future_Of_Work, pk=pk)
     subscription.gateway = gateway
@@ -426,12 +441,16 @@ def start_payment(request, pk, gateway):
         subscription.transaction_id = reference
         subscription.save()
 
+        # Convert USD → NGN (or other country’s currency)
+        target_currency = "EGP"   # you can later make this dynamic per user’s country
+        local_amount = convert_usd_to_local(subscription.fee, target_currency)
+
         payload = {
-            'countryCode': 'NG',
+            'country': 'EG',
             'reference': reference,
             'amount': {
-                'currency': 'NGN',
-                'total': str(int(float(subscription.fee) * 100))
+                'currency': target_currency,
+                'total': str(int(local_amount * 100))
             },
             'product': {
                 'name': 'Future Of Work',
@@ -459,7 +478,7 @@ def start_payment(request, pk, gateway):
 
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {settings.OPAY_SECRET_KEY}',
+            'Authorization': f'Bearer {settings.OPAY_PUBLIC_KEY}',
             'MerchantId': settings.OPAY_MERCHANT_ID,
         }
         try:

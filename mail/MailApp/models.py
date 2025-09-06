@@ -80,8 +80,8 @@ class Future_Of_Work(models.Model):
 
     PLAN_FEES = {
         'basic': Decimal("0.00"),
-        'pro': Decimal("1000.00"),
-        'exclusive': Decimal("2000.00")
+        'pro': Decimal("2.00"),
+        'exclusive': Decimal("20.00")
     }
     
 
