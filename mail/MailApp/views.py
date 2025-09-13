@@ -378,17 +378,17 @@ def payment_selection(request, pk):
     payment_methods = [
         {
             'name': 'Helio', 
-            'description': 'A Web3-native payment gateway for fast, secure, and crypto-friendly transactions.',
+            'description': 'Pay easily with crypto across multiple blockchains, using a fast and secure checkout experience.',
             'image_url': 'helio.png'
         },
         {
-            'name': 'Remita', 
-            'description': 'Trusted payment solution widely used for government, corporate, and local transactions.',
-            'image_url': 'remita.svg'
+            'name': 'Yellow Card', 
+            'description': 'Make safe cross-border payments with stablecoins and local currencies, trusted across Africa.',
+            'image_url': 'yellow-card.png'
         },
         {
             'name': 'Opay', 
-            'description': 'A popular mobile wallet enabling easy and convenient everyday payments.',
+            'description': 'A simple mobile wallet for instant transfers, card payments, and everyday bills.',
             'image_url': 'opay.png'
         },
     ]
@@ -458,6 +458,9 @@ def start_payment(request, pk, gateway):
             },
             'returnUrl': request.build_absolute_uri(
                 reverse('processing_payment', args=[subscription.pk])
+            ),
+            'notifyUrl': request.build_absolute_uri(
+                reverse('opay_webhook')
             ),
             'callbackUrl': request.build_absolute_uri(
                 reverse('opay_webhook')
@@ -571,58 +574,57 @@ def helio_webhook(request):
 @csrf_exempt
 def opay_webhook(request):
     """
-    OPay webhook for Express (Cashier) flow.
+    OPay webhook handler for General Payment / Express (Cashier) flow.
+    Validates payload and updates subscription status.
     """
     if request.method != "POST":
-        return JsonResponse({"status": "invalid method"}, status=405)
+        return JsonResponse({'code': '40001', 'message': 'Invalid method'}, status=405)
     
     try:
-        payload = request.body.decode('utf-8')
-        data = json.loads(payload)
-        print('Webhook Payload', data) # Debugging
+        payload = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        return JsonResponse({'code': '40002', 'message': 'Invalid JSON'}, status=400)
 
-        # Verify signature
-        received_sig = request.headers.get('Signature', '')
-        expected_sig = hmac.new(
-            settings.OPAY_PRIVATE_KEY.encode(),
-            payload.encode(),
-            hashlib.sha512
-        ).hexdigest()
+    data = payload.get('data') or payload
 
-        if received_sig !=expected_sig:
-            print("⚠️ Signature mismatch", received_sig, expected_sig)
-            return JsonResponse({'status': 'Invalid signature'}, status=400)
+    # --- Headers ---
+    merchant_id = request.headers.get('MerchantId')
+    if settings.OPAY_MERCHANT_ID and str(merchant_id) != str(settings.OPAY_MERCHANT_ID):
+        return JsonResponse({"code": "40005", "message": "Unauthorized merchantId"}, status=403)
+
+    # --- Identifier ---
+    ref = data.get('outOrderNo') or data.get('orderNo') or data.get('payNo')
+    if not ref:
+        return JsonResponse({'code': '40007', 'message': 'No order reference'}, status=400)
+
+    subscription = Future_Of_Work.objects.filter(transaction_id=ref).first()
+    if not subscription:
+            return JsonResponse({"code": "00000", "message": "SUCCESSFUL"}, status=200)
         
-        reference = data.get('orderNo') or data.get('reference')
-        order_status = data.get('status')
+    # Update status
+    status = (data.get('status') or data.get('orderStatus') or '').upper()
 
-        subscription = Future_Of_Work.objects.filter(transaction_id=reference).first()
-        if not subscription:
-            return JsonResponse({'status': 'Subscription not found'}, status=400)
+    # Idempotency check
+    if subscription.status == 'active' and status == "SUCCESS":
+        return JsonResponse({'status': 'already processed'})
         
-        # Idempotency check
-        if subscription.status == 'active' and order_status == "SUCCESS":
-            return JsonResponse({'status': 'already processed'})
-
-        # Use OPay timestamp if available
-        tx_time = data.get("updateTime") or data.get("createdTime")
-        subscription.created_at = (parse_datetime(tx_time) if tx_time else now())
-        
-        # Update status
-        if order_status == 'SUCCESS':
-            subscription.status = 'active'
-        elif order_status in ['FAILED', 'CANCELLED', 'EXPIRED']:
-            subscription.status = 'failed'
-        else:
-            subscription.status = 'pending'
-        subscription.transaction_id = reference
-        subscription.save()
-
-        return JsonResponse({'status': 'ok'})
+    if status == 'SUCCESS':
+        subscription.status = 'active'
+    elif status in ['FAILED', 'CANCELLED', 'EXPIRED']:
+        subscription.status = 'failed'
+    elif status in ['PENDING', 'PROCESSING']:
+        subscription.status = 'pending'
+    else:
+        subscription.status = 'pending'
     
-    except Exception as e:
-        print("Opay Webhook Error:", str(e))
-        return JsonResponse({'status': 'error'}, status=400)
+    subscription.transaction_id = ref
+    
+    # Use OPay timestamp if available
+    tx_time = data.get("updateTime") or data.get("createdTime") or data.get("transactionTime") or data.get("completedTime")
+    subscription.created_at = (parse_datetime(tx_time) if tx_time else now())
+    subscription.save()
+
+    return JsonResponse({"code": "00000", "message": "SUCCESSFUL"}, status=200)
 
 
 def processing_payment(request, pk):

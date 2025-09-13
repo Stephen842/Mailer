@@ -77,7 +77,7 @@
                 } else if (data.status === "failed") {
                     clearInterval(interval);
                     window.location.href = "{% url 'subscription_failed' subscription.id %}";
-                } else if (elapsed >= 300) { // 5 min fallback
+                } else if (elapsed >= 60) { // 5 min fallback
                     clearInterval(interval);
                     window.location.href = "{% url 'subscription_failed' subscription.id %}";
                 }
