@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse, HttpResponse
 from django.utils.timezone import now
 from django.utils.dateparse import parse_datetime
+from dateutil import parser
 import json, hmac, hashlib, requests, cloudinary, cloudinary.uploader, cloudinary.api, time
 from decimal import Decimal
 from django.urls import reverse
@@ -445,6 +446,8 @@ def start_payment(request, pk, gateway):
         target_currency = "EGP"   # you can later make this dynamic per user’s country
         local_amount = convert_usd_to_local(subscription.fee, target_currency)
 
+        NGROK_URL = "https://08fe5345015d.ngrok-free.app"
+
         payload = {
             'country': 'EG',
             'reference': reference,
@@ -459,12 +462,16 @@ def start_payment(request, pk, gateway):
             'returnUrl': request.build_absolute_uri(
                 reverse('processing_payment', args=[subscription.pk])
             ),
+            'notifyUrl': f"{NGROK_URL}{reverse('opay_webhook')}",
+            'callbackUrl': f"{NGROK_URL}{reverse('opay_webhook')}",
+            '''
             'notifyUrl': request.build_absolute_uri(
                 reverse('opay_webhook')
             ),
             'callbackUrl': request.build_absolute_uri(
                 reverse('opay_webhook')
             ),
+            '''
             "cancelUrl": request.build_absolute_uri(
                 reverse("subscription_failed", args=[subscription.pk])
             ),
@@ -494,7 +501,7 @@ def start_payment(request, pk, gateway):
             )
             response.raise_for_status()
         except requests.RequestException as e:
-            return render(request, 'pages/subscription_failed.html', {'error': f'Network error: {e}', 'subscription': subscription})
+            return render(request, 'pages/subscription_failed.html', {'error': f'OPay request failed: {e}', 'subscription': subscription})
 
         try:
             data = response.json()
@@ -505,7 +512,6 @@ def start_payment(request, pk, gateway):
         if data.get('code') == '00000':
             cashier_url = data['data'].get('cashierUrl')
             subscription.checkout_url = cashier_url
-            subscription.transaction_id = data['data'].get("orderNo")
             subscription.save()
             return redirect(cashier_url)
         else:
@@ -581,19 +587,15 @@ def opay_webhook(request):
         return JsonResponse({'code': '40001', 'message': 'Invalid method'}, status=405)
     
     try:
-        payload = json.loads(request.body.decode("utf-8"))
+        body = json.loads(request.body.decode("utf-8"))
+        data = body.get('payload')
+        if not data:
+            return JsonResponse({'code': '40003', 'message': 'No data in payload'}, status=400)
     except Exception:
         return JsonResponse({'code': '40002', 'message': 'Invalid JSON'}, status=400)
 
-    data = payload.get('data') or payload
-
-    # --- Headers ---
-    merchant_id = request.headers.get('MerchantId')
-    if settings.OPAY_MERCHANT_ID and str(merchant_id) != str(settings.OPAY_MERCHANT_ID):
-        return JsonResponse({"code": "40005", "message": "Unauthorized merchantId"}, status=403)
-
-    # --- Identifier ---
-    ref = data.get('outOrderNo') or data.get('orderNo') or data.get('payNo')
+    # --- Get your reference ---
+    ref = data.get('reference')
     if not ref:
         return JsonResponse({'code': '40007', 'message': 'No order reference'}, status=400)
 
@@ -602,7 +604,7 @@ def opay_webhook(request):
             return JsonResponse({"code": "00000", "message": "SUCCESSFUL"}, status=200)
         
     # Update status
-    status = (data.get('status') or data.get('orderStatus') or '').upper()
+    status = (data.get('status') or '').upper()
 
     # Idempotency check
     if subscription.status == 'active' and status == "SUCCESS":
@@ -612,16 +614,30 @@ def opay_webhook(request):
         subscription.status = 'active'
     elif status in ['FAILED', 'CANCELLED', 'EXPIRED']:
         subscription.status = 'failed'
-    elif status in ['PENDING', 'PROCESSING']:
+    elif status in ['PENDING', 'PROCESSING', 'INITIAL']:
         subscription.status = 'pending'
     else:
         subscription.status = 'pending'
     
     subscription.transaction_id = ref
     
+    # --- Update transaction timestamp ---
+    def to_datetime(val):
+        if not val:
+            return now()
+        try:
+            return datetime.fromtimestamp(int(val)/1000)
+        except Exception:
+            try:
+                # Case: ISO8601 or other datetime string
+                return parser.parse(val)
+            except Exception:
+                # Fallback: current time
+                return now()
+        
     # Use OPay timestamp if available
     tx_time = data.get("updateTime") or data.get("createdTime") or data.get("transactionTime") or data.get("completedTime")
-    subscription.created_at = (parse_datetime(tx_time) if tx_time else now())
+    subscription.created_at = to_datetime(tx_time) if tx_time else now()
     subscription.save()
 
     return JsonResponse({"code": "00000", "message": "SUCCESSFUL"}, status=200)
