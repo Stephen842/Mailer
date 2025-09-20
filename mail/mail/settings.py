@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'MailApp',
+    'future_of_work',
     'tinymce',
     'widget_tweaks',
     'phonenumber_field',
