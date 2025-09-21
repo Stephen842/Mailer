@@ -1,6 +1,7 @@
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from decimal import Decimal
+from django_countries.fields import CountryField
 
 # Create your models here.
 class Future_Of_Work(models.Model):
@@ -59,6 +60,7 @@ class Future_Of_Work(models.Model):
             'unique': "Phone number already exists."
         }
     )
+    country = CountryField(blank_label='Select your country')
     course_type = models.CharField(max_length=20, choices=COURSE_CHOICES, default="")
     plan_preference = models.CharField(max_length=20, choices=PLAN_CHOICES, default="")
     expertise = models.CharField(max_length=20, choices=EXPERTISE_CHOICES, default="")

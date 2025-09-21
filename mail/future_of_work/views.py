@@ -9,6 +9,7 @@ from dateutil import parser
 import json, hmac, hashlib, requests, time
 from decimal import Decimal
 from django.urls import reverse
+from django.contrib import messages
 
 from .models import  Future_Of_Work
 from .forms import FutureOfWorkForm
@@ -102,8 +103,8 @@ def convert_usd_to_local(amount_usd, target_currency="NGN"):
         return round(data["result"], 2)
     except Exception:
         # fallback if API fails (set your safe static rate here)
-        static_rates = {"NGN": 1600, "EGP": 50}
-        return round(amount_usd * static_rates.get(target_currency, 50), 2)
+        static_rates = {'NGN': 1600, 'GHS': 16, 'ZAR': 18, 'XOF': 600, 'KES': 150, 'EGP': 50, 'USD': 1}
+        return round(amount_usd * static_rates.get(target_currency, 1), 2)
 
 def start_payment(request, pk, gateway):
     subscription = get_object_or_404(Future_Of_Work, pk=pk)
@@ -122,8 +123,64 @@ def start_payment(request, pk, gateway):
         return render(request, 'pages/helio_checkout.html', context)     
     
     elif gateway == "paystack":
-        # TODO: integrate Remita checkout here
-        return HttpResponse("Paystack integration coming soon.")
+
+        # Generate and save your own merchant reference
+        reference = f'FutureOfWork-{subscription.pk}-{int(time.time())}'
+        subscription.transaction_id = reference
+        subscription.save()
+
+        # Get user's country → currency
+        user_country = (subscription.country.code if subscription.country else 'US').upper()
+
+        target_currency = 'NGN'
+
+        # Convert USD → local currency
+        local_amount = convert_usd_to_local(subscription.fee, target_currency)
+        amount_kobo = int(local_amount * 100)  # Paystack expects amount in kobo
+
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {settings.PAYSTACK_SECRET_KEY}',
+        }
+
+        payload = {
+            'email': subscription.email,
+            'amount': amount_kobo,
+            'reference': reference,
+            'currency': target_currency,
+            'callback_url': request.build_absolute_uri(
+                reverse('processing_payment', args=[subscription.pk])
+            ),
+            'cancelUrl': request.build_absolute_uri(
+                reverse("subscription_failed", args=[subscription.pk])
+            ),
+            'metadata': {
+                'subscription_id': subscription.pk,
+                'plan': subscription.plan_preference,
+                'name': subscription.name,
+                'country': user_country,
+            },
+        }
+
+        try:
+            resp = requests.post('https://api.paystack.co/transaction/initialize', headers=headers, json=payload, timeout=120)
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception as e:
+            messages.error(request, f'Paystack request failed: {str(e)}')
+            return redirect('subscription_failed', pk=subscription.pk)
+
+        if data.get('status') and data['data'].get('authorization_url'):
+            subscription.checkout_url = data['data']['authorization_url']
+            subscription.save()
+            return redirect(data['data']['authorization_url'])
+        else:
+            error_message = data.get('message', 'Unable to initialize Paystack transaction')
+            subscription.status = 'failed'
+            subscription.save()
+            messages.error(request, f'Payment initialization failed: {error_message}')
+            return redirect('subscription_failed', pk=subscription.pk)
+
 
     elif gateway == "opay":
         # Generate and save your own merchant reference
@@ -266,6 +323,76 @@ def helio_webhook(request):
         print('Webhook Error:', str(e))
         return JsonResponse({'status': 'ignored'})
     
+
+def verify_paystack_signature(request):
+    paystack_signature = request.headers.get('X-Paystack-Signature')
+    if not paystack_signature:
+        return False
+
+    computed_signature = hmac.new(
+        key=bytes(settings.PAYSTACK_SECRET_KEY, 'utf-8'),
+        msg=request.body,
+        digestmod=hashlib.sha512
+    ).hexdigest()
+
+    return hmac.compare_digest(computed_signature, paystack_signature)
+
+@csrf_exempt
+def paystack_webhook(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method'}, status=405)
+
+    # Verify signature first
+    if not verify_paystack_signature(request):
+        return JsonResponse({'error': 'Invalid Signature'}, status=403)
+    try:
+        payload = json.loads(request.body)
+        event = payload.get('event')
+        data = payload.get('data')
+
+        # Get user subscription via reference 
+        reference = data.get('reference')
+        if not reference:
+            return JsonResponse({'status': 'ignored', 'reason': 'No reference found'})
+        
+        subscription = Future_Of_Work.objects.filter(transaction_id=reference).first()
+        if not subscription:
+            return JsonResponse({'status': 'ignored', 'reason': 'Subscription not found'})
+
+        # Idempotency check
+        if subscription.transaction_id == reference and subscription.status in ['active', 'failed']:
+            return JsonResponse({'status': 'Already processed'})
+
+        # Update subscription status
+        if event == 'charge.success':
+            subscription.status = 'active'
+
+        elif event == 'charge.failed':
+            subscription.status = 'failed'
+
+        elif event == 'charge.refunded':
+            subscription.status = 'pending'
+
+        else:
+            print(f"Unhandled event: {event}")
+            return JsonResponse({'status': 'unhandled'})
+
+        # Update timestamp if available
+        created_at = data.get('created_at')
+        if created_at:
+            subscription.created_at = parse_datetime(created_at)
+        else:
+            subscription.created_at = now()
+
+        subscription.transaction_id = reference
+        subscription.save()
+
+        return JsonResponse({'status': 'ok'})
+        
+    except Exception as e:
+        print('Paystack Webhook Error:', str(e))
+        return JsonResponse({'status': 'ignored'})
+
 @csrf_exempt
 def opay_webhook(request):
     """
@@ -347,3 +474,11 @@ def processing_payment(request, pk):
 def check_subscription_status(request, pk):
     subscription = get_object_or_404(Future_Of_Work, pk=pk)
     return JsonResponse({'status': subscription.status})
+
+def currency_not_supported(request, pk):
+    subscription = get_object_or_404(Future_Of_Work, pk=pk)
+    context = {
+        "title": "Currency Not Supported",
+        "subscription": subscription,
+    }
+    return render(request, 'pages/currency_not_supported.html', context)

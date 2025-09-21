@@ -10,7 +10,10 @@ urlpatterns = [
 
     path('future-of-work/webhooks/helio/', views.helio_webhook, name='helio_webhook'),
     path('future-of-work/webhooks/opay/', views.opay_webhook, name='opay_webhook'),
+    path('future-of-work/webhooks/paystack/', views.paystack_webhook, name='paystack_webhook'),
 
     path('subscription/<int:pk>/processing/', views.processing_payment, name='processing_payment'),
     path('subscription/<int:pk>/check-status/', views.check_subscription_status, name='check_subscription_status'),
+
+    path('future-of-work/subscribe/<int:pk>/currency_not_supported/', views.currency_not_supported, name='currency_not_supported'),
 ]

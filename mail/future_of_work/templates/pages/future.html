@@ -95,9 +95,18 @@
 
                         <!-- Phone -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Phone number (optional)</label>
+                            <label class="block text-sm font-medium text-gray-700">Phone number</label>
                             {{ form.phone|add_class:"w-full rounded-lg border border-gray-300 focus:ring-1 focus:ring-yellow-700 focus:border-amber-500 transition duration-300 outline-none px-4 py-2 text-sm sm:text-base" |attr:"placeholder:+1 234567890" }}
                             {% for error in form.phone.errors %}
+                                <p class="text-red-600 text-sm mt-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+
+                        <!-- country -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Country of Residence</label>
+                            {{ form.country|add_class:"w-full rounded-lg border border-gray-300 focus:ring-1 focus:ring-yellow-700 focus:border-amber-500 px-4 py-2 bg-white transition duration-300 outline-none text-sm sm:text-base" |attr:"placeholder:NG"}}
+                            {% for error in form.country.errors %}
                                 <p class="text-red-600 text-sm mt-1">{{ error }}</p>
                             {% endfor %}
                         </div>

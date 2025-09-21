@@ -10,7 +10,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import cloudinary, cloudinary.uploader, cloudinary.api
 
-
 from .models import Subscriber, Campaign, SiteStats, WhatsappContact, WhatsappMessage
 from .forms import SubscriberForm, MultiEmailForm, CampaignForm, SendMessageForm, WhatsappContactForm, WhatsappMessageForm
 
