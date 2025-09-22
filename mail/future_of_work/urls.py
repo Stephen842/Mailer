@@ -16,4 +16,6 @@ urlpatterns = [
     path('subscription/<int:pk>/check-status/', views.check_subscription_status, name='check_subscription_status'),
 
     path('future-of-work/subscribe/<int:pk>/currency_not_supported/', views.currency_not_supported, name='currency_not_supported'),
+
+    path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
 ]

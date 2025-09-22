@@ -10,6 +10,8 @@ import json, hmac, hashlib, requests, time
 from decimal import Decimal
 from django.urls import reverse
 from django.contrib import messages
+from django.db.models import Count, Sum, Q
+from django.core.paginator import Paginator
 
 from .models import  Future_Of_Work
 from .forms import FutureOfWorkForm
@@ -482,3 +484,79 @@ def currency_not_supported(request, pk):
         "subscription": subscription,
     }
     return render(request, 'pages/currency_not_supported.html', context)
+
+
+def admin_dashboard(request):
+    total_users = Future_Of_Work.objects.count()
+    active_users = Future_Of_Work.objects.filter(status='active').count()
+    pending_users = Future_Of_Work.objects.filter(status='pending').count()
+    failed_users = Future_Of_Work.objects.filter(status='failed').count()
+
+    revenue_active = Future_Of_Work.objects.filter(status='active').aggregate(total=Sum('fee'))['total'] or Decimal('0.00')
+    revenue_pending = Future_Of_Work.objects.filter(status='pending').aggregate(total=Sum('fee'))['total'] or Decimal('0.00')
+    revenue_failed = Future_Of_Work.objects.filter(status='failed').aggregate(total=Sum('fee'))['total'] or Decimal('0.00')
+    total_revenue = Future_Of_Work.objects.aggregate(total=Sum('fee'))['total'] or Decimal('0.00')
+
+    ### Breakdown Statistics
+    course_breakdown = (
+        Future_Of_Work.objects.values('course_type').annotate(count=Count('id')).order_by('-count')
+    )
+
+    plan_breakdown = (
+        Future_Of_Work.objects.values('plan_preference').annotate(count=Count('id')).order_by('-count')
+    )
+
+    gateway_breakdown = (
+        Future_Of_Work.objects.values('gateway').annotate(count=Count('id')).order_by('-count')
+    )
+
+    context = {
+        'total_users': total_users,
+        'active_users': active_users,
+        'pending_users': pending_users,
+        'failed_users': failed_users,
+
+        'total_revenue': total_revenue,
+        'revenue_active': revenue_active,
+        'revenue_pending': revenue_pending,
+        'revenue_failed': revenue_failed,
+
+        'course_breakdown': course_breakdown,
+        'plan_breakdown': plan_breakdown,
+        'gateway_breakdown': gateway_breakdown
+    }
+    return render(request, 'pages/admin_dashboard.html', context)
+
+def admin_student(request):
+    students = Future_Of_Work.objects.all()
+
+    ### ---Search functionality ---
+    query = request.GET.get('q', '')
+    if query:
+        students = students.filter(
+            Q(name__icontains=query) |
+            Q(email__icontains=query) | 
+            Q(phone__icontains=query) |
+            Q(course_type__icontains=query) |
+            Q(plan_preference__icontains=query)
+        )
+
+    ### --- Filter by plan ---
+    plan = request.GET.get('plan', '')
+    if plan in ['basic', 'pro', 'exclusive']:
+        students = students.filter(plan_preference=plan)
+
+    ### --- Filter by payment status ---
+    status = request.GET.get('status', '')
+    if status in ['active', 'pending', 'failed']:
+        students = students.filter(status=status)
+
+    ### --- Filter by course choice ---
+    course = request.GET.get('course', '')
+    if course in ['web3', 'dao', 'metaverse', 'blockchain']:
+        students = students.filter(course_type=course)
+
+    ### --- Filter by student level ---
+    grading = request.GET.get('grading', '')
+    if grading in ['beginner', 'intermediate', 'advanced']:
+        students = students.filter(expertise=grading)
