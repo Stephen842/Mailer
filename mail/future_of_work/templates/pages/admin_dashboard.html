@@ -71,7 +71,9 @@
             <!-- Navbar -->
             <nav class="flex items-center justify-between w-full px-12 py-8 bg-white">
                 <!-- Logo -->
-                <img src="{% static 'Future OF Works.png' %}" alt="OwlphaDAO Future of Work Logo" class="w-32 h-4 object-contain">
+                <a href="{% url 'admin_dashboard' %}">
+                    <img src="{% static 'Future OF Works.png' %}" alt="OwlphaDAO Future of Work Logo" class="w-32 h-4 object-contain">
+                </a>
 
                 <!-- Navigation Links -->
                 <a href="https://owlphadao.com/about" class="px-4 py-2 bg-yellow-700 text-white font-extrabold rounded-2xl cursor-pointer transition duration-400 hover:bg-yellow-800 text-sm md:text-base">
@@ -90,22 +92,30 @@
             <section>
                 <h2 class="text-2xl font-semibold mb-4">Student Statistics</h2>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div class="bg-white rounded-2xl shadow p-4 text-center transform hover:scale-105 transition duration-300">
+
+                    <!-- Total Users (links to all) -->
+                    <a href="{% url 'admin_student' %}" class="bg-white rounded-2xl shadow p-4 text-center transform hover:scale-105 transition duration-300 block">
                         <h4 class="text-gray-500">Total Users</h4>
                         <p class="text-3xl font-bold">{{ total_users }}</p>
-                    </div>
-                    <div class="bg-green-100 rounded-2xl shadow p-4 text-center transform hover:scale-105 transition duration-300">
+                    </a>
+
+                    <!-- Total Active Users (links to all) -->
+                    <a href="{% url 'admin_student' %}?status=active" class="bg-green-100 rounded-2xl shadow p-4 text-center transform hover:scale-105 transition duration-300 block">
                         <h4 class="text-gray-700">Active</h4>
                         <p class="text-3xl font-bold text-green-600">{{ active_users }}</p>
-                    </div>
-                    <div class="bg-yellow-100 rounded-2xl shadow p-4 text-center transform hover:scale-105 transition duration-300">
+                    </a>
+
+                    <!-- Total Pending Users (links to all) -->
+                    <a href="{% url 'admin_student' %}?status=pending" class="bg-yellow-100 rounded-2xl shadow p-4 text-center transform hover:scale-105 transition duration-300 block">
                         <h4 class="text-gray-700">Pending</h4>
                         <p class="text-3xl font-bold text-yellow-600">{{ pending_users }}</p>
-                    </div>
-                    <div class="bg-red-100 rounded-2xl shadow p-4 text-center transform hover:scale-105 transition duration-300">
+                    </a>
+
+                    <!-- Total Users whose transaction failed (links to all) -->
+                    <a href="{% url 'admin_student' %}?status=failed" class="bg-red-100 rounded-2xl shadow p-4 text-center transform hover:scale-105 transition duration-300 block">
                         <h4 class="text-gray-700">Failed</h4>
                         <p class="text-3xl font-bold text-red-600">{{ failed_users }}</p>
-                    </div>
+                    </a>
                 </div>
             </section>
 

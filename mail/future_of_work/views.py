@@ -523,7 +523,8 @@ def admin_dashboard(request):
 
         'course_breakdown': course_breakdown,
         'plan_breakdown': plan_breakdown,
-        'gateway_breakdown': gateway_breakdown
+        'gateway_breakdown': gateway_breakdown,
+        'title': 'Future Of Work – Admin Dashboard'
     }
     return render(request, 'pages/admin_dashboard.html', context)
 
@@ -560,3 +561,44 @@ def admin_student(request):
     grading = request.GET.get('grading', '')
     if grading in ['beginner', 'intermediate', 'advanced']:
         students = students.filter(expertise=grading)
+
+    ### --- Bulk action ---
+    if request.method == 'POST':
+        selected_ids = request.POST.getlist('selected')
+        action = request.POST.get('action')
+        selected_students = Future_Of_Work.objects.filter(id__in=selected_ids)
+
+        if action == 'delete':
+            count, _ = selected_students.delete()
+            messages.success(request, f'{count} student(s) deleted successfully.')
+
+        elif action == 'mark_active':
+            selected_students.update(status='active')
+            messages.success(request, f'{selected_students.count()} student(s) marked as active.')
+
+        return redirect('admin_student')
+
+    ### --- Pagination ---
+    paginator = Paginator(students, 25)
+    page_number = request.GET.get('page')
+    students_page = paginator.get_page(page_number)
+
+    context = {
+        'students': students_page,
+        'title': 'Future Of Work – Student Management Dashboard'
+    }
+
+    return render(request, 'pages/admin_student.html', context)
+
+def student_detail(request, pk, name):
+    user = get_object_or_404(Future_Of_Work, id=pk, name=name)
+
+    # fetch all records for a user through email
+    user_payments = Future_Of_Work.objects.filter(email=user.email).order_by("-created_at")
+
+    context ={
+        'user': user,
+        'user_payments': user_payments,
+        'title': f'Future Of Work - {user.name}',
+    }
+    return render(request, 'pages/student_detail.html', context)

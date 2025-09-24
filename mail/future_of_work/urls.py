@@ -18,4 +18,6 @@ urlpatterns = [
     path('future-of-work/subscribe/<int:pk>/currency_not_supported/', views.currency_not_supported, name='currency_not_supported'),
 
     path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('dashboard/student/overview', views.admin_student, name='admin_student'),
+    path('dashboard/student/<str:name>/<int:pk>/', views.student_detail, name='student_detail'),
 ]
