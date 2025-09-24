@@ -43,7 +43,7 @@
             <!-- Navbar -->
             <nav class="flex items-center justify-between w-full px-12 py-8 bg-white">
                 <!-- Logo -->
-                <a href="{% url 'admin_dashboard' %}">
+                <a href="{% url 'admin_dashboard' username=request.user.username %}">
                     <img src="{% static 'Future OF Works.png' %}" alt="OwlphaDAO Future of Work Logo" class="w-32 h-4 object-contain">
                 </a>
 

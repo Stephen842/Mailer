@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('MailApp.urls')),
     path('', include('future_of_work.urls')),
+    path('', include('account.urls')),
     path("__reload__/", include("django_browser_reload.urls")),
     path('tinymce/', include('tinymce.urls')),
 ]

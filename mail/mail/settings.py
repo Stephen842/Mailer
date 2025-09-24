@@ -50,8 +50,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'MailApp',
     'future_of_work',
+    'account',
     'tinymce',
     'widget_tweaks',
     'phonenumber_field',
@@ -71,6 +73,17 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django_browser_reload.middleware.BrowserReloadMiddleware',
+    'account.middleware.UsernameURLMiddleware',
+]
+
+AUTH_USER_MODEL = 'account.User'
+
+AUTHENTICATION_BACKENDS = [
+    #This is for the custom Auth backend for the entire project
+    'account.BackendAuth.CustomAuthBackend',
+
+    # Django defaults
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 ROOT_URLCONF = 'mail.urls'

@@ -486,7 +486,7 @@ def currency_not_supported(request, pk):
     return render(request, 'pages/currency_not_supported.html', context)
 
 
-def admin_dashboard(request):
+def admin_dashboard(request, username):
     total_users = Future_Of_Work.objects.count()
     active_users = Future_Of_Work.objects.filter(status='active').count()
     pending_users = Future_Of_Work.objects.filter(status='pending').count()
@@ -528,7 +528,7 @@ def admin_dashboard(request):
     }
     return render(request, 'pages/admin_dashboard.html', context)
 
-def admin_student(request):
+def admin_student(request, username):
     students = Future_Of_Work.objects.all()
 
     ### ---Search functionality ---
@@ -576,7 +576,7 @@ def admin_student(request):
             selected_students.update(status='active')
             messages.success(request, f'{selected_students.count()} student(s) marked as active.')
 
-        return redirect('admin_student')
+        return redirect('admin_student', username=request.user.username)
 
     ### --- Pagination ---
     paginator = Paginator(students, 25)
@@ -590,7 +590,7 @@ def admin_student(request):
 
     return render(request, 'pages/admin_student.html', context)
 
-def student_detail(request, pk, name):
+def student_detail(request, pk, name, username):
     user = get_object_or_404(Future_Of_Work, id=pk, name=name)
 
     # fetch all records for a user through email
