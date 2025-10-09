@@ -17,13 +17,22 @@ class Campaign(models.Model):
 
     def __str__(self):
         return self.subject
+
+class PersonalizedEmail(models.Model):
+    subscriber = models.ForeignKey(Subscriber, on_delete=models.CASCADE)
+    subject = models.CharField(max_length=255)
+    body = HTMLField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.subject} → {self.subscriber.email}'
     
 class SiteStats(models.Model):
     visit_count = models.IntegerField(default=0)
 
     def increment_visit(self):
         self.visit_count += 1
-        self.save(update_fields=["visit_count"])
+        self.save(update_fields=['visit_count'])
 
 class WhatsappContact(models.Model):
     name = models.CharField(max_length=100)

@@ -26,46 +26,52 @@
 
         <title> {{title}} </title>
     </head>
-    <body class="relative flex items-center justify-center min-h-screen">
-        <!-- Background Video -->
-        <video autoplay muted loop playsinline class="absolute inset-0 w-full h-full object-cover z-0">
-            <source src="{% static 'owlphadao background.mp4' %}" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-    
-        <!-- Overlay -->
-        <div class="absolute inset-0 bg-black bg-opacity-20 z-10"></div>
-    
+    <body class="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 via-white to-indigo-100">
+        <!-- Animated Background Circles -->
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute w-64 h-64 bg-green-200 opacity-20 rounded-full top-10 left-10 blur-3xl animate-pulse"></div>
+            <div class="absolute w-72 h-72 bg-indigo-300 opacity-20 rounded-full bottom-10 right-10 blur-3xl animate-pulse"></div>
+        </div>
+
         <!-- Content -->
-        <div class="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-6 sm:p-8 md:p-10 max-w-lg sm:max-w-xl md:max-w-2xl w-full relative z-20 border border-yellow-700 mx-4">
-    
+        <div class="relative z-20 w-full max-w-lg p-6 mx-4 bg-white/10 border border-yellow-700 shadow-2xl backdrop-blur-lg rounded-2xl sm:p-8 md:p-10 sm:max-w-xl md:max-w-2xl">
+            
             <!-- Close Button -->
-            <button class="absolute top-4 right-4 text-gray-300 hover:text-white text-2xl font-bold">&times;</button>
-    
+            <button class="absolute text-2xl font-bold text-gray-300 top-4 right-4 hover:text-white">&times;</button>
+
             <!-- Logo -->
-            <div class="flex justify-center mb-6">
-                <img src="{% static 'owlphadao.jpg' %}" alt="OwlphaDAO" class="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-full object-cover drop-shadow-lg">
+            <div class="relative mx-auto w-12 h-12 md:w-28 md:h-28 rounded-full overflow-hidden shadow-xl ring-4 ring-yellow-800 ring-offset-2 animate-pulse">
+                <img src="{% static 'owlphadao.jpg' %}" alt="OwlphaDAO" class="object-cover w-full h-full transition duration-500 ease-in-out rounded-full hover:scale-110">
             </div>
-    
+
             <!-- Headline -->
-            <h2 class="text-2xl sm:text-3xl font-extrabold mb-3 text-center text-white tracking-wide">
+            <h2 class="mt-6 text-2xl font-extrabold text-center text-white sm:text-3xl tracking-wide">
                 Join Us
             </h2>
-            <p class="text-gray-200 mb-8 text-center leading-relaxed max-w-md mx-auto text-sm sm:text-base">
+
+            <p class="max-w-md mx-auto mb-8 text-sm leading-relaxed text-center text-gray-700 sm:text-base">
                 Subscribe to our newsletter for
-                <span class="text-yellow-600 font-semibold">exclusive insights</span>, early updates,
+                <span class="font-semibold text-yellow-600">exclusive insights</span>, early updates,
                 and trusted community news. Stay ahead with us.
             </p>
-    
+
             <!-- Form -->
-            <form method="post" class="flex flex-col sm:flex-row gap-3 sm:gap-0">
+            <form method="post" class="flex flex-col gap-3 sm:flex-row sm:gap-0">
                 {% csrf_token %}
-                <input type="email" name="email" placeholder="Enter your email address..." required class="flex-grow border border-gray-500/50 bg-white/20 text-gray-700 placeholder-gray-400 rounded-full sm:rounded-l-full sm:rounded-r-none px-5 py-3 outline-none focus:ring-1 focus:ring-yellow-600 focus:border-transparent">
-    
-                <button type="submit" class="bg-gradient-to-r from-yellow-700 to-yellow-500 hover:from-yellow-800 hover:to-yellow-600 transition text-white px-6 sm:px-8 py-3 shadow-lg font-semibold rounded-full sm:rounded-r-full sm:rounded-l-none hover:opacity-90 transition-all">
+                
+                <input type="email" name="email" placeholder="Enter your email address..." required class="flex-grow px-5 py-3 text-gray-700 placeholder-gray-700 bg-white/20 border border-gray-500/50 rounded-full sm:rounded-l-full sm:rounded-r-none outline-none focus:ring-1 focus:ring-yellow-600 focus:border-transparent">
+
+                <button type="submit" class="px-6 py-3 text-white transition-all bg-gradient-to-r from-yellow-700 to-yellow-500 hover:from-yellow-800 hover:to-yellow-600 sm:px-8 shadow-lg font-semibold rounded-full sm:rounded-r-full sm:rounded-l-none hover:opacity-90">
                     Subscribe
                 </button>
             </form>
         </div>
+
+        <!-- Footer -->
+        <footer class="py-2 mt-6 text-center">
+            <h3 class="text-xs text-gray-600">
+                &copy; {% now 'Y' %} Owlpha Digital Hub Limited
+            </h3>
+        </footer>
     </body>
 </html>

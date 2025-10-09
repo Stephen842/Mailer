@@ -84,9 +84,18 @@
 
         <div class="p-6 space-y-10">
             <!-- Heading -->
-            <h1 class="text-3xl font-bold mb-6 animate-fade-in">
-                Hello {{ user.username|default:"Admin" }}<span class="waving-hand">👋</span>
-            </h1>
+            <div class="flex justify-between items-center p-6">
+                <h1 class="text-3xl font-bold animate-fade-in">
+                    Hello {{ user.username|default:"Admin" }} <span class="waving-hand">👋</span>
+                </h1>
+
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="px-4 py-2 bg-yellow-700 text-white font-extrabold rounded-2xl cursor-pointer transition duration-400 hover:bg-yellow-800 text-sm md:text-base">
+                        Logout
+                    </button>
+                </form>
+            </div>
 
             <!-- User Stats Section -->
             <section>

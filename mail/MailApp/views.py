@@ -9,8 +9,11 @@ from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import cloudinary, cloudinary.uploader, cloudinary.api
+import json
+from django.db.models.functions import TruncMonth
+from django.db.models import Count
 
-from .models import Subscriber, Campaign, SiteStats, WhatsappContact, WhatsappMessage
+from .models import Subscriber, Campaign, PersonalizedEmail, SiteStats, WhatsappContact, WhatsappMessage
 from .forms import SubscriberForm, MultiEmailForm, CampaignForm, SendMessageForm, WhatsappContactForm, WhatsappMessageForm
 
 def add_subscriber(request):
@@ -56,6 +59,42 @@ def dashboard(request):
     total_subscribers = Subscriber.objects.count()
     total_campaigns = Campaign.objects.count()
     total_visitors = visit_count 
+    total_personalized = PersonalizedEmail.objects.count()
+
+    # Track recent activity
+    recent_personalized = PersonalizedEmail.objects.order_by('-sent_at')[:5]
+
+    ### Monthly Subscribers
+    subscriber_data = (
+        Subscriber.objects.annotate(month=TruncMonth('date_subscribed'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+    month_labels = [d['month'].strftime('%b') for d in subscriber_data]
+    monthly_subscribers = [d['count'] for d in subscriber_data]
+
+    ### Monthly Campaigns
+    campaign_data = (
+        Campaign.objects.annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+    monthly_campaigns = [d['count'] for d in campaign_data]
+
+    ### Monthly Personalized Email
+    email_data = (
+        PersonalizedEmail.objects.annotate(month=TruncMonth('sent_at'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+    monthly_personal_emails = [d['count'] for d in email_data]
+
+    ### WhatsApp Messages (just mock for now)
+    whatsapp_labels = ['Sent', 'Delivered', 'Failed']
+    whatsapp_data = [40, 30, 5]
 
     # Greeetings 
     current_hour = datetime.now().hour
@@ -69,7 +108,15 @@ def dashboard(request):
     context = {
         'total_subscribers': total_subscribers,
         'total_campaigns': total_campaigns,
+        'total_personalized': total_personalized,
         'total_visitors': total_visitors,
+        'recent_personalized': recent_personalized,
+        'month_labels': json.dumps(month_labels),
+        'monthly_subscribers': json.dumps(monthly_subscribers),
+        'monthly_campaigns': json.dumps(monthly_campaigns),
+        'monthly_personal_emails': json.dumps(monthly_personal_emails),
+        'whatsapp_labels': json.dumps(whatsapp_labels),
+        'whatsapp_data': json.dumps(whatsapp_data),
         'greeting': greeting,
         'title': 'Admin Dashboard | Mailer',
     }
@@ -147,7 +194,14 @@ def send_message(request, pk):
             email.attach_alternative(html_message, 'text/html')
             email.send(fail_silently=False)
             messages.success(request, f'Message Sent to {subscriber.email}')
-            return redirect('subscriber_list')
+
+            # Save record for analytics
+        PersonalizedEmail.objects.create(
+            subscriber=subscriber,
+            subject=subject,
+            body=body
+        )
+        return redirect('subscriber_list')
     else:
         form = SendMessageForm()
     
@@ -206,7 +260,8 @@ def send_campaign(request, campaign_id):
         subject=campaign.subject,
         body=plain_message,
         from_email=settings.DEFAULT_FROM_EMAIL,
-        to=emails,
+        to=[settings.DEFAULT_FROM_EMAIL],
+        bcc=emails
     )
     email.attach_alternative(html_message, 'text/html')
     email.send(fail_silently=False)

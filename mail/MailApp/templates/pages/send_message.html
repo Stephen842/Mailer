@@ -29,17 +29,18 @@
     </head>
     <body class="h-screen flex bg-gray-50">
         <!-- Sidebar -->
-        <aside class="h-screen w-64 bg-gradient-to-b from-white via-green-50 to-green-100 shadow-lg p-6 flex flex-col fixed left-0 top-0">
+        <aside class="fixed left-0 top-0 h-full w-64 bg-gradient-to-b from-white via-green-50 to-green-100 shadow-lg p-6 flex flex-col">
+            
             <!-- Brand -->
             <div class="flex items-center gap-2 mb-10">
                 <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M12 4v16m8-8H4"></path>
+                    <path d="M12 4v16m8-8H4"></path>
                 </svg>
                 <h1 class="text-3xl font-bold text-green-700 tracking-wide">Mailer</h1>
             </div>
 
-            <!-- Nav -->
-            <nav class="flex flex-col gap-3">
+            <!-- Navigation -->
+            <nav class="flex flex-col gap-5">
                 <a href="/" class="flex items-center gap-3 px-4 py-2 rounded-md text-gray-700 font-medium hover:bg-green-100 hover:text-green-700 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -63,7 +64,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path d="M3 7h18M3 12h18M3 17h18"></path>
                     </svg>
-                    Campaign
+                    Campaigns
                 </a>
                 <a href="{% url 'create_campaign' %}" class="flex items-center gap-3 px-4 py-2 rounded-md text-gray-700 font-medium hover:bg-green-100 hover:text-green-700 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -78,8 +79,8 @@
                     Email Subscribers
                 </a>
                 <a href="{% url 'contact_list' %}" class="flex items-center gap-3 px-4 py-2 rounded-md text-gray-700 font-medium hover:bg-green-100 hover:text-green-700 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M20.52 3.48A11.84 11.84 0 0 0 3.48 20.52L2 22l2.6-.68a11.83 11.83 0 0 0 5.63 1.43h.05A11.94 11.94 0 0 0 21.94 9.8a11.92 11.92 0 0 0-1.42-6.32ZM12 21.13a9.1 9.1 0 0 1-4.65-1.26l-.33-.19-3.07.8.82-2.99-.22-.35a9.13 9.13 0 0 1-1.38-4.88 9.17 9.17 0 0 1 15.62-6.5 9.18 9.18 0 0 1-6.79 15.37Zm5.11-6.25c-.28-.14-1.65-.81-1.91-.9s-.45-.14-.63.14-.72.89-.88 1.07-.33.21-.61.07a7.45 7.45 0 0 1-2.2-1.36 8.25 8.25 0 0 1-1.53-1.89c-.16-.28 0-.43.12-.58.12-.13.28-.33.42-.49s.18-.28.28-.47a.56.56 0 0 0 0-.5c-.13-.14-.61-1.47-.84-2-.22-.52-.44-.45-.61-.46H8.3a1.1 1.1 0 0 0-.8.37 3.4 3.4 0 0 0-1 2.48 5.89 5.89 0 0 0 1.25 3.07 13.5 13.5 0 0 0 5.22 4.57 6.08 6.08 0 0 0 2.3.47 3.83 3.83 0 0 0 2.5-1.13 3.06 3.06 0 0 0 .65-1.8c.01-.16 0-.28-.25-.41Z" />
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M20.52 3.48A11.84 11.84 0 0 0 3.48 20.52L2 22l2.6-.68a11.83 11.83 0 0 0 5.63 1.43h.05A11.94 11.94 0 0 0 21.94 9.8a11.92 11.92 0 0 0-1.42-6.32ZM12 21.13a9.1 9.1 0 0 1-4.65-1.26l-.33-.19-3.07.8.82-2.99-.22-.35a9.13 9.13 0 0 1-1.38-4.88 9.17 9.17 0 0 1 15.62-6.5 9.18 9.18 0 0 1-6.79 15.37Zm5.11-6.25c-.28-.14-1.65-.81-1.91-.9s-.45-.14-.63.14-.72.89-.88 1.07-.33.21-.61.07a7.45 7.45 0 0 1-2.2-1.36 8.25 8.25 0 0 1-1.53-1.89c-.16-.28 0-.43.12-.58.12-.13.28-.33.42-.49s.18-.28.28-.47a.56.56 0 0 0 0-.5c-.13-.14-.61-1.47-.84-2-.22-.52-.44-.45-.61-.46H8.3a1.1 1.1 0 0 0-.8.37 3.4 3.4 0 0 0-1 2.48 5.89 5.89 0 0 0 1.25 3.07 13.5 13.5 0 0 0 5.22 4.57 6.08 6.08 0 0 0 2.3.47 3.83 3.83 0 0 0 2.5-1.13 3.06 3.06 0 0 0 .65-1.8c.01-.16 0-.28-.25-.41Z"/>
                     </svg>
                     WhatsApp Contacts
                 </a>
@@ -91,32 +92,74 @@
                 </a>
             </nav>
 
-            <div class="mt-auto flex flex-col items-center pt-10">
-                <img src="https://media.licdn.com/dms/image/v2/D4D0BAQHUyn95gj3h1A/company-logo_200_200/company-logo_200_200/0/1708529125650?e=1756944000&v=beta&t=I1o-tPph7ojP9QZQuo7DZQyoFaOYWpSl2leumF_oxIk" alt="OwlphaDAO" class="w-20 h-20 object-contain rounded-full shadow">
-                <p class="mt-3 text-sm font-semibold text-gray-700">Admin</p>
+            <!-- Admin Footer -->
+            <div class="mt-auto flex flex-col items-center pt-8">
+                <!-- Logo -->
+                <div class="relative mx-auto w-8 h-8 md:w-28 md:h-28 rounded-full overflow-hidden shadow-xl ring-4 ring-yellow-800 ring-offset-2 animate-pulse">
+                    <img src="{% static 'owlphadao.jpg' %}" alt="OwlphaDAO" class="object-cover w-full h-full transition duration-500 ease-in-out rounded-full hover:scale-110">
+                </div>
+                <p class="mt-3 text-sm font-semibold text-gray-700">{{ user.username|default:"Admin" }}</p>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 ml-64 flex flex-col min-h-screen overflow-y-auto">
-            <div class="w-3/4 mx-auto p-8 bg-white rounded-xl shadow-lg mt-10">
-                <h1 class="text-2xl font-semibold mb-6 text-gray-700">Send Message to {{ subscriber.email }}</h1>
-                <form method="post" class="space-y-6">
-                    {% csrf_token %}
-                    {{ form.media }}
-                    <div>
-                        <label class="block text-sm font-semibold mb-2 text-gray-700">Subject</label>
-                        {{ form.subject | add_class:"w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-1 focus:ring-green-500" | attr:"placeholder:Subject..."}}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold mb-2 text-gray-700">Body</label>
-                        {{ form.body }}
-                    </div>
-                    <button type="submit" class="inline-block bg-green-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-green-700 transition">Send Message</button>
-                </form>
+        <main class="ml-64 flex-1 relative min-h-screen flex flex-col bg-gradient-to-br from-indigo-100 via-white to-green-50 overflow-y-auto">
+
+            <!-- Animated background -->
+            <div class="absolute inset-0 overflow-hidden z-0">
+                <div class="absolute -top-32 -left-32 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+                <div class="absolute top-1/3 -right-40 w-96 h-96 bg-green-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse delay-700"></div>
             </div>
+
+            <!-- Campaign Form -->
+            <section class="relative z-10 flex-1 flex flex-col items-center justify-center py-12 z-10">
+                <div class="w-full max-w-3xl bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-100 p-10">
+                    
+                    <div class="flex justify-between items-center mb-8">
+                        <h1 class="text-3xl font-extrabold text-gray-800 flex items-center gap-2">
+                            Send Message to {{ subscriber.email }}
+                        </h1>
+                        <a href="{% url 'dashboard' %}" class="text-sm text-gray-500 hover:text-green-600 transition">← Back to Dashboard</a>
+                    </div>
+
+                    <form method="post" class="space-y-8">
+                        {% csrf_token %}
+                        {{ form.media }}
+
+                        <!-- Subject -->
+                        <div>
+                            <label for="id_subject" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Email Subject
+                            </label>
+                            {{ form.subject|add_class:"w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition"|attr:"placeholder:Enter subject line..." }}
+                            <p class="text-xs text-gray-400 mt-1">Keep it short and attention-grabbing — under 70 characters works best.</p>
+                        </div>
+
+                        <!-- Body -->
+                        <div>
+                            <label for="id_body" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Email Content
+                            </label>
+                            <div class="border border-gray-200 rounded-lg overflow-hidden shadow-inner">
+                                {{ form.body }}
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">Use <strong>TinyMCE</strong> to format your email — add links, images, and styles easily.</p>
+                        </div>
+
+                        <!-- Footer Actions -->
+                        <div class="flex justify-end pt-6 border-t border-gray-100">
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:-translate-y-0.5 hover:shadow-lg">
+                                Send Message
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
             <!-- Footer -->
-            <p class="text-gray-500 text-xs text-center py-6">Mailer MVP • Crafted with ❤️ by OwlphaDAO</p>
+            <footer class="relative z-10 mt-auto py-6 text-center text-gray-500 text-xs">
+                &copy; {% now 'Y' %} Mailer | Owlpha Digital Hub Limited
+            </footer>
         </main>
     </body>
 </html>
