@@ -1,4 +1,5 @@
 {% load static %}
+{% load widget_tweaks %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -26,9 +27,7 @@
 
         <title> {{title}} </title>
     </head>
-    
-
-  <body class="h-screen flex bg-gray-50">
+    <body class="h-screen flex bg-gray-50">
         <!-- Sidebar -->
         <aside class="fixed left-0 top-0 h-full w-64 bg-gradient-to-b from-white via-green-50 to-green-100 shadow-lg p-6 flex flex-col">
             
@@ -105,56 +104,54 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="relative flex-1 ml-64 min-h-screen overflow-y-auto bg-gradient-to-br from-indigo-100 via-white to-green-50 flex flex-col">
+        <main class="ml-64 flex-1 relative min-h-screen flex flex-col bg-gradient-to-br from-indigo-100 via-white to-green-50 overflow-y-auto">
 
-            <!-- Glowing Animated Background -->
+            <!-- Animated background -->
             <div class="absolute inset-0 overflow-hidden z-0">
                 <div class="absolute -top-32 -left-32 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
                 <div class="absolute top-1/3 -right-40 w-96 h-96 bg-green-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse delay-700"></div>
             </div>
 
-            <!-- Centered Success Card -->
-            <section class="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12">
-                <div class="w-full max-w-2xl bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-100 p-10 text-center transition-transform transform hover:-translate-y-1 hover:shadow-green-200">
+            <!-- Campaign Form -->
+            <section class="relative z-10 flex-1 flex flex-col items-center justify-center py-12 z-10">
+                <div class="w-full max-w-3xl bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-100 p-10">
                     
-                    <!-- Success Icon Animation -->
-                    <div class="relative flex justify-center mb-6">
-                        <div class="absolute w-24 h-24 bg-green-200 rounded-full blur-2xl opacity-50 animate-pulse"></div>
-                        <div class="relative w-16 h-16 flex items-center justify-center bg-green-100 rounded-full border border-green-300 shadow-md">
-                            <svg class="w-10 h-10 text-green-600 animate-bounce-slow" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        </div>
+                    <div class="flex justify-between items-center mb-8">
+                        <h1 class="text-3xl font-semibold text-gray-700">Create Telegram Campaign</h1>
+                        <a href="{% url 'dashboard' %}" class="text-sm text-gray-500 hover:text-green-600 transition">← Back to Dashboard</a>
                     </div>
 
-                    <h1 class="text-3xl font-extrabold text-green-700 mb-4 p-3">Campaign Sent Successfully 🎉</h1>
-                    <p class="text-gray-600 text-base mb-8">
-                        Your email campaign has been successfully sent to all selected recipients.
-                    </p>
+                    <form method="post" class="space-y-8">
+                        {% csrf_token %}
+                        {{ form.media }}
 
-                    <!-- Campaign Details -->
-                    <div class="bg-gray-50 rounded-xl shadow-inner p-6 mb-8 text-left">
-                        <p class="text-gray-800 mb-2"><span class="font-semibold text-gray-800">Subject:</span> {{ campaign.subject }}</p>
-                        
-                        <div class="mt-4">
-                            <p class="font-semibold text-gray-800 mb-2">Sent To:</p>
-                            <div class="text-gray-700 text-sm space-y-1 max-h-32 overflow-y-auto">
-                                {% for email in emails %}
-                                    <p class="border-b border-gray-100 pb-1">{{ email }}</p>
-                                {% endfor %}
+                        <!-- Subject -->
+                        <div>
+                            <label for="id_subject" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Campaign Subject
+                            </label>
+                            {{ form.title|add_class:"w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white transition"|attr:"placeholder:Enter subject line..." }}
+                            <p class="text-xs text-gray-400 mt-1">Keep it short and attention-grabbing — under 70 characters works best.</p>
+                        </div>
+
+                        <!-- Body -->
+                        <div>
+                            <label for="id_body" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Campaign Content
+                            </label>
+                            <div class="border border-gray-200 rounded-lg overflow-hidden shadow-inner">
+                                {{ form.message }}
                             </div>
+                            <p class="text-xs text-gray-400 mt-2">Use <strong>TinyMCE</strong> to format your message — add links, images, and styles easily.</p>
                         </div>
-                    </div>
 
-                    <!-- Action Buttons -->
-                    <div class="flex flex-wrap justify-center gap-4">
-                        <a href="{% url 'create_campaign' %}" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:-translate-y-0.5 hover:shadow-lg">
-                            Create New Campaign
-                        </a>
-                        <a href="{% url 'campaign_list' %}" class="bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 font-semibold px-6 py-3 rounded-lg shadow-sm transition transform hover:-translate-y-0.5 hover:shadow-md">
-                            View Campaigns
-                        </a>
-                    </div>
+                        <!-- Footer Actions -->
+                        <div class="flex justify-end pt-6 border-t border-gray-100">
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:-translate-y-0.5 hover:shadow-lg">
+                                Send Campaign
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </section>
 

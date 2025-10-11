@@ -10,11 +10,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import cloudinary, cloudinary.uploader, cloudinary.api
 import json
+import requests
+from django.views.decorators.csrf import csrf_exempt
 from django.db.models.functions import TruncMonth
 from django.db.models import Count
 
-from .models import Subscriber, Campaign, PersonalizedEmail, SiteStats, WhatsappContact, WhatsappMessage
-from .forms import SubscriberForm, MultiEmailForm, CampaignForm, SendMessageForm, WhatsappContactForm, WhatsappMessageForm
+from .models import Subscriber, Campaign, PersonalizedEmail, SiteStats, TelegramSubscriber, TelegramCampaign
+from .forms import SubscriberForm, MultiEmailForm, CampaignForm, SendMessageForm, TelegramCampaignForm
+from .utils import send_telegram_message
 
 def add_subscriber(request):
     """Handle adding a new subscriber email."""
@@ -25,7 +28,7 @@ def add_subscriber(request):
             return redirect('subscribe_success')
     else:
         form = SubscriberForm()
-
+        
     # Count visit only once every 10 seconds per user session
     stats, created = SiteStats.objects.get_or_create(pk=1)
 
@@ -214,7 +217,7 @@ def send_message(request, pk):
     return render(request, 'pages/send_message.html', context)
 
 def campaign_list(request):
-    """Campaign List Page"""
+    """Email Campaign List Page"""
     campaigns = Campaign.objects.all().order_by('created_at')
 
     context = {
@@ -291,66 +294,128 @@ def delete_campaign(request, pk):
     messages.success(request, f'Deleted campaign: {campaign.subject}')
     return redirect('campaign_list')
 
-def contact_list(request):
-    """Contact List Page"""
-    contacts = WhatsappContact.objects.all().order_by('created_at')
+@csrf_exempt
+def telegram_webhook(request):
+    '''Handles incoming updates from Telegram'''
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            message = data.get('message', {})
+            chat = message.get('chat', {})
+            chat_id = chat.get('id')
+            username = chat.get('username', 'Guest')
+            text = message.get('text', '').lower()
+
+        except Exception as e:
+            return JsonResponse({'ok': True})
+
+        ### To handle telegram bot /start command
+        if chat_id and text:
+            if text == '/subscribe':
+                TelegramSubscriber.objects.get_or_create(
+                    chat_id=chat_id,
+                    defaults={'username': username,},
+                )
+                welcome_message = (
+                    f"👋 Hey <b>{username}</b>!\n\n"
+                    f"Welcome aboard 🚀 You’re now subscribed to <b>OwlphaDAO</b> — your gateway to the latest in blockchain and Web3.\n\n"
+                    "✨ Stay tuned for exclusive updates, insider news, and a front-row seat to everything we’re building at OwlphaDAO — all delivered straight to your device!"
+                )
+                send_telegram_message(chat_id, welcome_message)
+
+            elif text == '/unsubscribe':
+                sub = TelegramSubscriber.objects.filter(chat_id=chat_id).first()
+                if sub:
+                    sub.delete()
+                send_telegram_message(chat_id, "❌ You’ve been unsubscribed. We’re sad to see you go 💔")
+        return JsonResponse({'ok': True})
+
+def telegram_campaign_list(request):
+    ''' Telegram Campaign List Page '''
+    campaigns = TelegramCampaign.objects.all().order_by('-created_at')
+
+    context = {
+        'campaigns': campaigns,
+        'title': 'Telegram Campaigns | Mailer',
+    }
+    return render(request, 'pages/telegram_campaign_list.html', context)
+
+def create_telegram_campaign(request):
+    '''Handle creating a new telegram campaign draft'''
+    if request.method == 'POST':
+        form = TelegramCampaignForm(request.POST)
+        if form.is_valid():
+            campaign = form.save()
+            messages.success(request, 'Telegram campaign created successfully.')
+            return redirect('telegram_campaign_list')
+    else:
+        form = TelegramCampaignForm()
+
+    context = {
+        'form': form,
+        'title': 'Create telegram Campaign | Mailer'
+    }
+    return render(request, 'pages/create_telegram_campaign.html', context)
+
+def send_telegram_campaign(request, campaign_id):
+    campaign = get_object_or_404(TelegramCampaign, id=campaign_id)
+    subscribers = TelegramSubscriber.objects.all()
+
+    sent_count = 0
+
+    for sub in subscribers:
+        send_telegram_message(sub.chat_id, f"📢 <b>{campaign.title}</b>\n\n{campaign.message}")
+        sent_count += 1
+
+    ### Mark Campaign as sent
+    campaign.sent = True
+    campaign.save()
+
+    context = {
+        'campaign': campaign,
+        'sub': sub,
+        'sent_count': sent_count,
+        'total_subscribers': subscribers.count(),
+        'title': 'Send Telegram Campaign | Mailer'
+    }
+
+    return render(request, 'pages/send_telegram.html', context)
+
+def telegram_campaign_view(request, pk):
+    """Render a telegram campaign view page."""
+    campaign = get_object_or_404(TelegramCampaign, pk=pk)
+    
+    context = {
+        'campaign': campaign,
+        'title': f'{campaign.title} | Mailer'
+    }
+    return render(request, 'pages/telegram_campaign_view.html', context)
+
+def telegram_delete_campaign(request, pk):
+    """Handles deleting telegram campaign"""
+    campaign = get_object_or_404(TelegramCampaign, pk=pk)
+    campaign.delete()
+    messages.success(request, f'Deleted campaign: {campaign.title}')
+    return redirect('telegram_campaign_list')
+
+def telegram_list(request):
+    """Telegram Subscriber List Page"""
+    contacts = TelegramSubscriber.objects.all().order_by('joined_at')
 
     context = {
         'contacts': contacts,
-        'title': 'Contact List | Mailer',
+        'title': 'Telegram Subscribers | Mailer',
     }
 
-    return render(request, 'pages/contact_list.html', context)
+    return render(request, 'pages/telegram_subscribers_list.html', context)
 
-def create_contact(request):
-    """Handle adding of contact."""
-    if request.method == 'POST':
-        form = WhatsappContactForm(request.POST)
-        if form.is_valid():
-            form.save_contact()
-            messages.success(request, "Contacts added successfully!")
-            return redirect('contact_list')
-    else:
-        form = WhatsappContactForm()
 
-    context = {
-        'form': form,
-        'title': 'Create New Contact | Mailer',
-    }
-
-    return render(request, 'pages/create_contact.html', context)
-
-def delete_contact(request, pk):
-    """Handles deleting contact"""
-    contact = get_object_or_404(WhatsappContact, pk=pk)
+def delete_telegram_sub(request, pk):
+    """Handles deleting telegram subscriber"""
+    contact = get_object_or_404(TelegramSubscriber, pk=pk)
     contact.delete()
-    messages.success(request, f'Deleted campaign: {contact.name}')
-    return redirect('contact_list')
-
-def send_whatsapp_message(request):
-    if request.method == 'POST':
-        form = WhatsappMessageForm(request.POST)
-        if form.is_valid():
-            message_instance = form.save()
-
-            contacts = WhatsappContact.objects.all()
-            for contact in contacts:
-                personalized_message = message_instance.message.replace('{{name}}', contact.name)
-
-                print(f"Sending to {contact.phone_number}: {personalized_message}")
-
-            messages.success(request, 'WhatsApp Campaign Sent Successfully')
-            return redirect('contact_list')
-        
-    else:
-        form = WhatsappMessageForm()
-
-    context = {
-        'form': form,
-        'title': 'Send WhatsApp Campaign | Mailer',
-    }
-
-    return render(request, 'pages/send_whatsapp.html', context)
+    messages.success(request, f'Deleted subscriber: {contact.username}')
+    return redirect('telegram_list')
 
 @csrf_exempt
 def tinymce_upload(request):

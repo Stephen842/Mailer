@@ -34,18 +34,20 @@ class SiteStats(models.Model):
         self.visit_count += 1
         self.save(update_fields=['visit_count'])
 
-class WhatsappContact(models.Model):
-    name = models.CharField(max_length=100)
-    phone_number = PhoneNumberField(unique=True)
-    created_at  = models.DateTimeField(auto_now=True)
+class TelegramSubscriber(models.Model):
+    chat_id = models.CharField(max_length=100, unique=True)
+    username = models.CharField(max_length=100, blank=True, null=True)
+    joined_at  = models.DateTimeField(auto_now_add=True)
 
 
     def __str__(self):
-        return f"{self.name} - {self.phone_number}"
+        return str(self.chat_id) or self.username
     
-class WhatsappMessage(models.Model):
+class TelegramCampaign(models.Model):
+    title = models.CharField(max_length=200)
     message = models.TextField()
     created_at  = models.DateTimeField(auto_now=True)
+    sent = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Message from {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+        return self.title

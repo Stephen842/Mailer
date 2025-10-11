@@ -129,18 +129,18 @@
 
                     <h1 class="text-3xl font-extrabold text-green-700 mb-4 p-3">Campaign Sent Successfully 🎉</h1>
                     <p class="text-gray-600 text-base mb-8">
-                        Your email campaign has been successfully sent to all selected recipients.
+                        Your Telegram campaign has been successfully sent to all selected recipients.
                     </p>
 
                     <!-- Campaign Details -->
                     <div class="bg-gray-50 rounded-xl shadow-inner p-6 mb-8 text-left">
-                        <p class="text-gray-800 mb-2"><span class="font-semibold text-gray-800">Subject:</span> {{ campaign.subject }}</p>
+                        <p class="text-gray-800 mb-2"><span class="font-semibold text-gray-800">Subject:</span> {{ campaign.title }}</p>
                         
                         <div class="mt-4">
                             <p class="font-semibold text-gray-800 mb-2">Sent To:</p>
                             <div class="text-gray-700 text-sm space-y-1 max-h-32 overflow-y-auto">
-                                {% for email in emails %}
-                                    <p class="border-b border-gray-100 pb-1">{{ email }}</p>
+                                {% for s in sub %}
+                                    <p class="border-b border-gray-100 pb-1">{{ s }}</p>
                                 {% endfor %}
                             </div>
                         </div>
@@ -148,10 +148,10 @@
 
                     <!-- Action Buttons -->
                     <div class="flex flex-wrap justify-center gap-4">
-                        <a href="{% url 'create_campaign' %}" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:-translate-y-0.5 hover:shadow-lg">
+                        <a href="{% url 'create_telegram_campaign' %}" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:-translate-y-0.5 hover:shadow-lg">
                             Create New Campaign
                         </a>
-                        <a href="{% url 'campaign_list' %}" class="bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 font-semibold px-6 py-3 rounded-lg shadow-sm transition transform hover:-translate-y-0.5 hover:shadow-md">
+                        <a href="{% url 'telegram_campaign_list' %}" class="bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 font-semibold px-6 py-3 rounded-lg shadow-sm transition transform hover:-translate-y-0.5 hover:shadow-md">
                             View Campaigns
                         </a>
                     </div>

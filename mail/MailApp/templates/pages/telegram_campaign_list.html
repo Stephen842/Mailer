@@ -26,9 +26,7 @@
 
         <title> {{title}} </title>
     </head>
-    
-
-  <body class="h-screen flex bg-gray-50">
+    <body class="h-screen flex bg-gray-50">
         <!-- Sidebar -->
         <aside class="fixed left-0 top-0 h-full w-64 bg-gradient-to-b from-white via-green-50 to-green-100 shadow-lg p-6 flex flex-col">
             
@@ -105,63 +103,58 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="relative flex-1 ml-64 min-h-screen overflow-y-auto bg-gradient-to-br from-indigo-100 via-white to-green-50 flex flex-col">
-
-            <!-- Glowing Animated Background -->
+        <main class="relative bg-gradient-to-br from-indigo-50 via-white to-indigo-100 flex-1 ml-64 p-4 flex flex-col min-h-screen overflow-y-auto">
+            <!-- Animated background -->
             <div class="absolute inset-0 overflow-hidden z-0">
                 <div class="absolute -top-32 -left-32 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
                 <div class="absolute top-1/3 -right-40 w-96 h-96 bg-green-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse delay-700"></div>
             </div>
 
-            <!-- Centered Success Card -->
-            <section class="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12">
-                <div class="w-full max-w-2xl bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-100 p-10 text-center transition-transform transform hover:-translate-y-1 hover:shadow-green-200">
-                    
-                    <!-- Success Icon Animation -->
-                    <div class="relative flex justify-center mb-6">
-                        <div class="absolute w-24 h-24 bg-green-200 rounded-full blur-2xl opacity-50 animate-pulse"></div>
-                        <div class="relative w-16 h-16 flex items-center justify-center bg-green-100 rounded-full border border-green-300 shadow-md">
-                            <svg class="w-10 h-10 text-green-600 animate-bounce-slow" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+            <div class="flex-grow flex flex-col justify-start p-10 z-10">
+                <div class="max-w-5xl w-full mx-auto p-8 bg-white rounded-xl shadow-lg">
+                    <div class="flex justify-between items-center mb-6">
+                        <h1 class="text-3xl font-semibold text-gray-700">All Telegram Campaign</h1>
+                        <a href="{% url 'create_telegram_campaign' %}" class="inline-flex items-center gap-2 bg-green-600 text-white px-5 py-2 rounded-full shadow hover:bg-green-700 transition-all duration-200">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M12 4v16m8-8H4"></path>
                             </svg>
-                        </div>
-                    </div>
-
-                    <h1 class="text-3xl font-extrabold text-green-700 mb-4 p-3">Campaign Sent Successfully 🎉</h1>
-                    <p class="text-gray-600 text-base mb-8">
-                        Your email campaign has been successfully sent to all selected recipients.
-                    </p>
-
-                    <!-- Campaign Details -->
-                    <div class="bg-gray-50 rounded-xl shadow-inner p-6 mb-8 text-left">
-                        <p class="text-gray-800 mb-2"><span class="font-semibold text-gray-800">Subject:</span> {{ campaign.subject }}</p>
-                        
-                        <div class="mt-4">
-                            <p class="font-semibold text-gray-800 mb-2">Sent To:</p>
-                            <div class="text-gray-700 text-sm space-y-1 max-h-32 overflow-y-auto">
-                                {% for email in emails %}
-                                    <p class="border-b border-gray-100 pb-1">{{ email }}</p>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="flex flex-wrap justify-center gap-4">
-                        <a href="{% url 'create_campaign' %}" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition transform hover:-translate-y-0.5 hover:shadow-lg">
-                            Create New Campaign
-                        </a>
-                        <a href="{% url 'campaign_list' %}" class="bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 font-semibold px-6 py-3 rounded-lg shadow-sm transition transform hover:-translate-y-0.5 hover:shadow-md">
-                            View Campaigns
+                            Create Telegram Campaign
                         </a>
                     </div>
+
+                    <table class="min-w-full table-auto border border-gray-200 rounded-lg overflow-hidden">
+                        <thead>
+                            <tr class="bg-gray-100 text-left text-sm">
+                                <th class="px-4 py-3 font-semibold">Subject</th>
+                                <th class="px-4 py-3 font-semibold">Date Created</th>
+                                <th class="px-4 py-3 font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200 text-sm">
+                            {% for campaign in campaigns %}
+                            <tr>
+                                <td class="px-4 py-3">{{ campaign.title }}</td>
+                                <td class="px-4 py-3">{{ campaign.created_at }}</td>
+                                <td class="px-4 py-3 space-x-4">
+                                    <a href="{% url 'telegram_campaign_view' campaign.pk %}" class="inline-block text-blue-600 font-medium hover:underline">View Campaign</a>
+                                    <a href="{% url 'telegram_delete_campaign' campaign.pk %}" class="inline-block text-red-600 font-medium hover:underline" onclick="return confirm('Are you sure?');">Delete</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="px-4 py-4 text-center text-gray-500">No telegram campaign yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-            </section>
+            </div>
 
             <!-- Footer -->
-            <footer class="relative z-10 mt-auto py-6 text-center text-gray-500 text-xs">
-                &copy; {% now 'Y' %} Mailer | Owlpha Digital Hub Limited
+            <footer class="mt-10 text-center text-gray-500 text-xs">
+                &copy; {% now 'Y' %} Mailer | Owlpha Digital Hub Limited 
             </footer>
         </main>
+
     </body>
 </html>

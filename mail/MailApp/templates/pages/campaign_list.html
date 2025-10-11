@@ -42,52 +42,53 @@
             <nav class="flex flex-col gap-5">
                 <a href="/" class="flex items-center gap-3 px-4 py-2 rounded-md text-gray-700 font-medium hover:bg-green-100 hover:text-green-700 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"></path>
                     </svg>
                     View Site
                 </a>
                 <a href="{% url 'dashboard' %}" class="flex items-center gap-3 px-4 py-2 rounded-md text-gray-700 font-medium hover:bg-green-100 hover:text-green-700 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M3 12h18"></path>
+                        <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8v-10h-8v10zm0-18v6h8V3h-8z"></path>
                     </svg>
                     Dashboard
                 </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-2 rounded-md text-gray-700 font-medium hover:bg-green-100 hover:text-green-700 transition-colors">
+                <a href="{% url 'subscriber_list' %}" class="flex items-center gap-3 px-4 py-2 rounded-md text-gray-700 font-medium hover:bg-green-100 hover:text-green-700 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M5 3h14v18H5z"></path>
+                        <path d="M4 4h16v16H4z"></path>
+                        <path d="M22,6l-10,7L2,6"></path>
                     </svg>
-                    Analytics
+                    Email Subscribers
                 </a>
                 <a href="{% url 'campaign_list' %}" class="flex items-center gap-3 px-4 py-2 rounded-md text-gray-700 font-medium hover:bg-green-100 hover:text-green-700 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M3 7h18M3 12h18M3 17h18"></path>
+                        <path d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
-                    Campaigns
+                    Email Campaigns
                 </a>
                 <a href="{% url 'create_campaign' %}" class="flex items-center gap-3 px-4 py-2 rounded-md text-gray-700 font-medium hover:bg-green-100 hover:text-green-700 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path d="M12 4v16m8-8H4"></path>
                     </svg>
-                    Create Campaign
+                    Email Campaign
                 </a>
-                <a href="{% url 'subscriber_list' %}" class="flex items-center gap-3 px-4 py-2 rounded-md text-gray-700 font-medium hover:bg-green-100 hover:text-green-700 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M16 4h2a2 2 0 0 1 2 2v14l-4-4H6a2 2 0 0 1-2-2V4h12z"></path>
-                    </svg>
-                    Email Subscribers
-                </a>
-                <a href="{% url 'contact_list' %}" class="flex items-center gap-3 px-4 py-2 rounded-md text-gray-700 font-medium hover:bg-green-100 hover:text-green-700 transition-colors">
+                
+                <a href="{% url 'telegram_list' %}" class="flex items-center gap-3 px-4 py-2 rounded-md text-gray-700 font-medium hover:bg-green-100 hover:text-green-700 transition-colors">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M20.52 3.48A11.84 11.84 0 0 0 3.48 20.52L2 22l2.6-.68a11.83 11.83 0 0 0 5.63 1.43h.05A11.94 11.94 0 0 0 21.94 9.8a11.92 11.92 0 0 0-1.42-6.32ZM12 21.13a9.1 9.1 0 0 1-4.65-1.26l-.33-.19-3.07.8.82-2.99-.22-.35a9.13 9.13 0 0 1-1.38-4.88 9.17 9.17 0 0 1 15.62-6.5 9.18 9.18 0 0 1-6.79 15.37Zm5.11-6.25c-.28-.14-1.65-.81-1.91-.9s-.45-.14-.63.14-.72.89-.88 1.07-.33.21-.61.07a7.45 7.45 0 0 1-2.2-1.36 8.25 8.25 0 0 1-1.53-1.89c-.16-.28 0-.43.12-.58.12-.13.28-.33.42-.49s.18-.28.28-.47a.56.56 0 0 0 0-.5c-.13-.14-.61-1.47-.84-2-.22-.52-.44-.45-.61-.46H8.3a1.1 1.1 0 0 0-.8.37 3.4 3.4 0 0 0-1 2.48 5.89 5.89 0 0 0 1.25 3.07 13.5 13.5 0 0 0 5.22 4.57 6.08 6.08 0 0 0 2.3.47 3.83 3.83 0 0 0 2.5-1.13 3.06 3.06 0 0 0 .65-1.8c.01-.16 0-.28-.25-.41Z"/>
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.48 7.02l-1.67 7.88c-.12.55-.45.68-.91.42l-2.52-1.86-1.21 1.16c-.13.13-.24.24-.48.24l.17-2.61 4.75-4.29c.21-.19-.05-.3-.33-.11l-5.87 3.7-2.52-.79c-.55-.17-.56-.55.11-.82l9.84-3.79c.45-.17.85.11.7.8z"/>
                     </svg>
-                    WhatsApp Contacts
+                    Telegram Contacts
                 </a>
-                <a href="{% url 'send_whatsapp_message' %}" class="flex items-center gap-3 px-4 py-2 rounded-md text-gray-700 font-medium hover:bg-green-100 hover:text-green-700 transition-colors">
+                <a href="{% url 'telegram_campaign_list' %}" class="flex items-center gap-3 px-4 py-2 rounded-md text-gray-700 font-medium hover:bg-green-100 hover:text-green-700 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                    TG Campaigns
+                </a>
+                <a href="{% url 'create_telegram_campaign' %}" class="flex items-center gap-3 px-4 py-2 rounded-md text-gray-700 font-medium hover:bg-green-100 hover:text-green-700 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path d="M12 4v16m8-8H4"></path>
                     </svg>
-                    Contact Campaign 
+                    TG Campaign
                 </a>
             </nav>
 
@@ -112,12 +113,12 @@
             <div class="flex-grow flex flex-col justify-start p-10 z-10">
                 <div class="max-w-5xl w-full mx-auto p-8 bg-white rounded-xl shadow-lg">
                     <div class="flex justify-between items-center mb-6">
-                        <h1 class="text-3xl font-bold text-gray-800">All Subscribers</h1>
+                        <h1 class="text-3xl font-semibold text-gray-700">All Email Campaign</h1>
                         <a href="{% url 'create_campaign' %}" class="inline-flex items-center gap-2 bg-green-600 text-white px-5 py-2 rounded-full shadow hover:bg-green-700 transition-all duration-200">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path d="M12 4v16m8-8H4"></path>
                             </svg>
-                            Create Campaign
+                            Create Email Campaign
                         </a>
                     </div>
 
