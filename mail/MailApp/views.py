@@ -13,9 +13,10 @@ import json
 import requests
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models.functions import TruncMonth
-from django.db.models import Count
+from django.db.models import Count, Sum, Value
+from django.db.models.functions import Coalesce
 
-from .models import Subscriber, Campaign, PersonalizedEmail, SiteStats, TelegramSubscriber, TelegramCampaign
+from .models import Subscriber, Campaign, EmailCampaignRecipient, PersonalizedEmail, SiteStats, TelegramSubscriber, TelegramCampaign
 from .forms import SubscriberForm, MultiEmailForm, CampaignForm, SendMessageForm, TelegramCampaignForm
 from .utils import send_telegram_message
 
@@ -67,7 +68,7 @@ def dashboard(request):
     # Track recent activity
     recent_personalized = PersonalizedEmail.objects.order_by('-sent_at')[:5]
 
-    ### Monthly Subscribers
+    ### Monthly Email Subscribers
     subscriber_data = (
         Subscriber.objects.annotate(month=TruncMonth('date_subscribed'))
         .values('month')
@@ -77,7 +78,7 @@ def dashboard(request):
     month_labels = [d['month'].strftime('%b') for d in subscriber_data]
     monthly_subscribers = [d['count'] for d in subscriber_data]
 
-    ### Monthly Campaigns
+    ### Monthly Email Campaigns
     campaign_data = (
         Campaign.objects.annotate(month=TruncMonth('created_at'))
         .values('month')
@@ -95,9 +96,31 @@ def dashboard(request):
     )
     monthly_personal_emails = [d['count'] for d in email_data]
 
-    ### WhatsApp Messages (just mock for now)
-    whatsapp_labels = ['Sent', 'Delivered', 'Failed']
-    whatsapp_data = [40, 30, 5]
+    ### Telegram Analytics
+    telegram_labels = ['Sent', 'Failed']
+    telegram_data = [
+        TelegramCampaign.objects.aggregate(total=Coalesce(Sum('sent_count'), Value(0)))['total'],
+        TelegramCampaign.objects.aggregate(total=Coalesce(Sum('failed_count'), Value(0)))['total'],
+    ]
+
+    ### Monthly Telegram Subscribers
+    telegram_subscriber_data = (
+        TelegramSubscriber.objects.annotate(month=TruncMonth('joined_at'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+    month_telegram_labels = [d['month'].strftime('%b') for d in telegram_subscriber_data]
+    monthly_telegram_subscribers = [d['count'] for d in telegram_subscriber_data]
+
+    ### Monthly Telegram Campaigns
+    telegram_campaign_data = (
+        TelegramCampaign.objects.annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+    monthly_telegram_campaigns = [d['count'] for d in telegram_campaign_data]
 
     # Greeetings 
     current_hour = datetime.now().hour
@@ -118,8 +141,11 @@ def dashboard(request):
         'monthly_subscribers': json.dumps(monthly_subscribers),
         'monthly_campaigns': json.dumps(monthly_campaigns),
         'monthly_personal_emails': json.dumps(monthly_personal_emails),
-        'whatsapp_labels': json.dumps(whatsapp_labels),
-        'whatsapp_data': json.dumps(whatsapp_data),
+        'telegram_labels': json.dumps(telegram_labels),
+        'telegram_data': json.dumps(telegram_data),
+        'month_telegram_labels': json.dumps(month_telegram_labels),
+        'monthly_telegram_subscribers': json.dumps(monthly_telegram_subscribers),
+        'monthly_telegram_campaigns': monthly_telegram_campaigns,
         'greeting': greeting,
         'title': 'Admin Dashboard | Mailer',
     }
@@ -269,6 +295,9 @@ def send_campaign(request, campaign_id):
     email.attach_alternative(html_message, 'text/html')
     email.send(fail_silently=False)
 
+    for s in subscribers:
+        EmailCampaignRecipient.objects.create(campaign=campaign, email=s.email)
+
     context = {
         'campaign': campaign,
         'emails': emails,
@@ -280,9 +309,13 @@ def send_campaign(request, campaign_id):
 def campaign_view(request, pk):
     """Render a nice campaign view page."""
     campaign = get_object_or_404(Campaign, pk=pk)
+    recipients = campaign.recipients.all()
+    emails = [r.email for r in recipients]
+
     
     context = {
         'campaign': campaign,
+        'emails': emails,
         'title': f'{campaign.subject} | Mailer'
     }
     return render(request, 'pages/campaign_view.html', context)
@@ -347,7 +380,7 @@ def create_telegram_campaign(request):
         if form.is_valid():
             campaign = form.save()
             messages.success(request, 'Telegram campaign created successfully.')
-            return redirect('telegram_campaign_list')
+            return redirect('send_telegram_campaign', campaign_id=campaign.id)
     else:
         form = TelegramCampaignForm()
 
@@ -361,20 +394,26 @@ def send_telegram_campaign(request, campaign_id):
     campaign = get_object_or_404(TelegramCampaign, id=campaign_id)
     subscribers = TelegramSubscriber.objects.all()
 
-    sent_count = 0
+    any_success = False
 
     for sub in subscribers:
-        send_telegram_message(sub.chat_id, f"📢 <b>{campaign.title}</b>\n\n{campaign.message}")
-        sent_count += 1
+        result = send_telegram_message(sub.chat_id, f"📢 <b>{campaign.title}</b>\n\n{campaign.message}")
+        
+        if result and result.get('ok'):
+            any_success = True
+        else:
+            campaign.failed_count += 1
+    
+    if any_success:
+        campaign.sent_count += 1
 
-    ### Mark Campaign as sent
+    ### Mark Campaign as sent and update the campaign stats
     campaign.sent = True
     campaign.save()
 
     context = {
         'campaign': campaign,
-        'sub': sub,
-        'sent_count': sent_count,
+        'subscribers': subscribers,
         'total_subscribers': subscribers.count(),
         'title': 'Send Telegram Campaign | Mailer'
     }
@@ -384,9 +423,11 @@ def send_telegram_campaign(request, campaign_id):
 def telegram_campaign_view(request, pk):
     """Render a telegram campaign view page."""
     campaign = get_object_or_404(TelegramCampaign, pk=pk)
+    subscribers = TelegramSubscriber.objects.all()
     
     context = {
         'campaign': campaign,
+        'subscribers': subscribers,
         'title': f'{campaign.title} | Mailer'
     }
     return render(request, 'pages/telegram_campaign_view.html', context)

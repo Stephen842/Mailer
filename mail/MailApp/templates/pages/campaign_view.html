@@ -144,6 +144,17 @@
                                 <span class="text-gray-500 font-semibold block">Body</span>
                                 <div class="text-gray-800 prose max-w-none">{{ campaign.body|safe }}</div>
                             </div>
+
+                            <div class="mt-4">
+                                <p class="font-semibold text-gray-800 mb-2">Sent To:</p>
+                                <div class="text-gray-700 text-sm space-y-1 max-h-32 overflow-y-auto">
+                                    {% for email in emails %}
+                                        <p class="border-b border-gray-100 pb-1">{{ email }}</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
                         </div>
 
                         <!-- Back Button -->

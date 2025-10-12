@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ===== TELEGRAM SUBSCRIBERS LINE CHART =====
+    // ===== Telegram SUBSCRIBERS LINE CHART =====
     const ctxTelegramSubscribers = document.getElementById('telegramsubscribersChart');
     if (ctxTelegramSubscribers) {
         const gradientBlue = ctxTelegramSubscribers.getContext('2d').createLinearGradient(0, 0, 0, 400);
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ===== EMAIL CAMPAIGNS BAR CHART =====
+    // ===== CAMPAIGNS BAR CHART =====
     const ctxCampaigns = document.getElementById('campaignsChart');
     if (ctxCampaigns) {
         new Chart(ctxCampaigns, {
@@ -81,39 +81,9 @@ document.addEventListener('DOMContentLoaded', () => {
             data: {
                 labels: window.chartData.month_labels,
                 datasets: [{
-                    label: 'Email Campaigns Sent',
+                    label: 'Campaigns Sent',
                     data: window.chartData.monthly_campaigns,
                     backgroundColor: 'rgba(16,185,129,0.7)',
-                    borderRadius: 12,
-                    borderSkipped: false
-                }]
-            },
-            options: {
-                responsive: true,
-                animation: { duration: 1800, easing: 'easeOutQuart' },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { backgroundColor: '#111827', titleColor: '#fff', bodyColor: '#e5e7eb' }
-                },
-                scales: {
-                    x: { grid: { display: false } },
-                    y: { grid: { color: 'rgba(229,231,235,0.2)' } }
-                }
-            }
-        });
-    }
-
-    // ===== TELEGRAM CAMPAIGNS BAR CHART =====
-    const ctxTelegramCampaigns = document.getElementById('telegramcampaignsChart');
-    if (ctxTelegramCampaigns) {
-        new Chart(ctxTelegramCampaigns, {
-            type: 'bar',
-            data: {
-                labels: window.chartData.month_labels,
-                datasets: [{
-                    label: 'Telegram Campaigns Sent',
-                    data: window.chartData.monthly_telegram_campaigns,
-                    backgroundColor: 'rgba(20, 5, 234, 0.7)',
                     borderRadius: 12,
                     borderSkipped: false
                 }]
@@ -163,17 +133,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ===== Telegram DOUGHNUT CHART =====
-    const ctxTelegram = document.getElementById('telegramChart');
-    if (ctxTelegram) {
-        new Chart(ctxTelegram, {
+    // ===== WHATSAPP DOUGHNUT CHART =====
+    const ctxWhatsApp = document.getElementById('whatsappChart');
+    if (ctxWhatsApp) {
+        new Chart(ctxWhatsApp, {
             type: 'doughnut',
             data: {
-                labels: window.chartData.telegram_labels,
+                labels: window.chartData.whatsapp_labels,
                 datasets: [{
-                    label: 'Telegram Analytics',
-                    data: window.chartData.telegram_data,
-                    backgroundColor: ['#10b981', '#dc4c0aff'],
+                    label: 'WhatsApp Messages',
+                    data: window.chartData.whatsapp_data,
+                    backgroundColor: ['#10b981', '#3b82f6', '#f59e0b'],
                     hoverOffset: 12
                 }]
             },
@@ -189,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 id: 'centerText',
                 afterDraw(chart) {
                     const { ctx, chartArea: { width, height } } = chart;
-                    const total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                    const total = chart._metasets[0].total;
                     ctx.save();
                     ctx.font = 'bold 18px sans-serif';
                     ctx.fillStyle = '#374151';

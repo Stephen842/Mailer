@@ -17,6 +17,14 @@ class Campaign(models.Model):
 
     def __str__(self):
         return self.subject
+    
+class EmailCampaignRecipient(models.Model):
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name="recipients")
+    email = models.EmailField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.email} -> {self.campaign.subject}"
 
 class PersonalizedEmail(models.Model):
     subscriber = models.ForeignKey(Subscriber, on_delete=models.CASCADE)
@@ -48,6 +56,11 @@ class TelegramCampaign(models.Model):
     message = models.TextField()
     created_at  = models.DateTimeField(auto_now=True)
     sent = models.BooleanField(default=False)
+
+    # Tracking fields
+    total_subscribers = models.IntegerField(default=0)
+    sent_count = models.IntegerField(default=0)
+    failed_count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.title

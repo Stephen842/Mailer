@@ -168,16 +168,28 @@
 
                 <!-- Charts Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                    <!-- Subscribers Over Time -->
+                    <!-- Email Subscribers Over Time -->
                     <div class="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                        <h2 class="text-xl font-bold text-gray-800 mb-4">Monthly Subscribers</h2>
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Monthly Email Subscribers</h2>
                         <canvas id="subscribersChart" class="w-full h-56"></canvas>
                     </div>
 
-                    <!-- Campaigns Over Time -->
+                    <!-- Telegram Subscribers Over Time -->
+                    <div class="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Monthly Telegram Subscribers</h2>
+                        <canvas id="telegramsubscribersChart" class="w-full h-56"></canvas>
+                    </div>
+
+                    <!-- Email Campaigns Over Time -->
                     <div class="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300">
                         <h2 class="text-xl font-bold text-gray-800 mb-4">Monthly Email Campaign Sent</h2>
                         <canvas id="campaignsChart" class="w-full h-56"></canvas>
+                    </div>
+
+                    <!-- Telegram Campaigns Over Time -->
+                    <div class="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Monthly Telegram Campaign Sent</h2>
+                        <canvas id="telegramcampaignsChart" class="w-full h-56"></canvas>
                     </div>
 
                     <!-- Personalized Emails -->
@@ -186,10 +198,10 @@
                         <canvas id="personalEmailsChart" class="w-full h-56"></canvas>
                     </div>
 
-                    <!-- WhatsApp Messages -->
+                    <!-- Telegram Analytics -->
                     <div class="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                        <h2 class="text-xl font-bold text-gray-800 mb-4">Telegram Campaign Sent</h2>
-                        <canvas id="whatsappChart" class="w-full h-56"></canvas>
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Telegram Analytics</h2>
+                        <canvas id="telegramChart" class="w-full h-56"></canvas>
                     </div>
                 </div>
             </div>
@@ -235,8 +247,11 @@
                 monthly_subscribers: {{ monthly_subscribers|safe }},
                 monthly_campaigns: {{ monthly_campaigns|safe }},
                 monthly_personal_emails: {{ monthly_personal_emails|safe }},
-                whatsapp_labels: {{ whatsapp_labels|safe }},
-                whatsapp_data: {{ whatsapp_data|safe }}
+                telegram_labels: {{ telegram_labels|safe }},
+                telegram_data: {{ telegram_data|safe }},
+                month_telegram_labels: {{ month_telegram_labels|safe }},
+                monthly_telegram_subscribers: {{ monthly_telegram_subscribers|safe }},
+                monthly_telegram_campaigns: {{ monthly_telegram_campaigns|safe }},
             };
         </script>
         <script src="{% static 'dashboard_charts.js' %}"></script>

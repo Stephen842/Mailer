@@ -46,6 +46,3 @@ class TelegramCampaignForm(forms.ModelForm):
     class Meta:
         model = TelegramCampaign
         fields = ['title', 'message']
-        widgets = {
-            'message': TinyMCE(attrs={'cols': 70, 'rows': 20}),
-        }

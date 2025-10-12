@@ -140,9 +140,11 @@
                                 Campaign Content
                             </label>
                             <div class="border border-gray-200 rounded-lg overflow-hidden shadow-inner">
-                                {{ form.message }}
+                                {{ form.message|add_class:"w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:bg-white transition"|attr:"placeholder:Enter your campaign message..."|attr:"rows:10"|attr:"cols:70" }}
                             </div>
-                            <p class="text-xs text-gray-400 mt-2">Use <strong>TinyMCE</strong> to format your message — add links, images, and styles easily.</p>
+                            <p class="text-xs text-gray-400 mt-2">
+                                You can use Telegram’s supported markdown/HTML like: <code>&lt;b&gt;bold&lt;/b&gt;</code>, <code>&lt;i&gt;italic&lt;/i&gt;</code>, <code>&lt;a href=&quot;#&quot;&gt;link&lt;/a&gt;</code>
+                            </p>
                         </div>
 
                         <!-- Footer Actions -->
