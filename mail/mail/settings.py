@@ -52,7 +52,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'MailApp',
-    'future_of_work',
     'account',
     'tinymce',
     'widget_tweaks',
@@ -189,12 +188,67 @@ TINYMCE_DEFAULT_CONFIG = {
     'height': 400,
     'width': '100%',
     'menubar': 'file edit view insert format tools table help',
-    'plugins': 'advlist autolink lists link image imagetools uploadimage charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount',
-    'toolbar': 'undo redo | formatselect | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help | link image',
-    'image_advtab': True,
+    'plugins': (
+        'advlist autolink lists link image media file '
+        'charmap print preview anchor '
+        'searchreplace visualblocks code fullscreen '
+        'insertdatetime table paste code help wordcount'
+    ),
+    'toolbar': (
+        'undo redo | formatselect | bold italic underline | '
+        'alignleft aligncenter alignright alignjustify | '
+        'bullist numlist outdent indent | removeformat | help | '
+        'link image media file'
+    ),
     'automatic_uploads': True,
-    'file_picker_types': 'image',
+    'file_picker_types': 'file image media',
     'images_upload_url': '/tinymce-upload/',
+    'file_picker_callback': '''
+    function(callback, value, meta) {
+        var input = document.createElement('input');
+        input.setAttribute('type', 'file');
+
+        if (meta.filetype === 'image') {
+            input.setAttribute('accept', 'image/*');
+        } else if (meta.filetype === 'media') {
+            input.setAttribute('accept', 'video/*, audio/*');
+        } else {
+            input.setAttribute('accept', '.pdf,.doc,.docx,.xls,.xlsx');
+        }
+
+        input.onchange = function() {
+            var file = this.files[0];
+            var formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/tinymce-upload/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Upload response:", data);
+                if (data.location) {
+                    if (meta.filetype === 'image') {
+                        callback(data.location, { alt: file.name });
+                    } else if (meta.filetype === 'media') {
+                        callback(data.location, { source2: data.location });
+                    } else {
+                        // For PDFs, Docs, etc.
+                        callback(data.location, { text: file.name });
+                    }
+                } else {
+                    alert("Upload failed: " + JSON.stringify(data));
+                }
+            })
+            .catch(err => {
+                alert("Upload error: " + err);
+            });
+        };
+
+        input.click();
+    }
+'''
 }
 
 
@@ -205,11 +259,4 @@ cloudinary.config(
     secure = True
 )
 
-OPAY_SECRET_KEY = config('OPAY_SECRET_KEY')
-OPAY_PUBLIC_KEY = config('OPAY_PUBLIC_KEY')
-OPAY_MERCHANT_ID = config('OPAY_MERCHANT_ID')
-OPAY_API_URL = config('OPAY_API_URL')
-
-PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY')
-PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY')
 TELEGRAM_BOT_TOKEN = config('TELEGRAM_BOT_TOKEN')

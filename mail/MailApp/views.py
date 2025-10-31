@@ -265,7 +265,7 @@ def create_campaign(request):
 
     context = {
         'form': form,
-        'title': 'Create Email Campaign',
+        'title': 'Create Email Campaign | Mailer',
     }
 
     return render(request, 'pages/create_campaign.html', context)
@@ -461,7 +461,7 @@ def delete_telegram_sub(request, pk):
 @csrf_exempt
 def tinymce_upload(request):
     """
-    Handle TinyMCE image uploads and store them directly in Cloudinary.
+    Handle TinyMCE uploads for all file types and store them directly in Cloudinary.
     """
     if request.method == 'POST' and request.FILES.get('file'):
         file_obj = request.FILES['file']
@@ -471,10 +471,11 @@ def tinymce_upload(request):
             result = cloudinary.uploader.upload(
                 file_obj,
                 folder="tinymce_uploads",
-                resource_type="auto"
+                resource_type="auto",
+                access_mode="public"
             )
         
-            return JsonResponse({'location': result.get('secure_url')})
+            return JsonResponse({'location': result['secure_url']})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
         
